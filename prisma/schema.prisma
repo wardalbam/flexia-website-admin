@@ -56,6 +56,7 @@ model Vacature {
   benefits        String[]
   categoryId      String?
   category        Category?     @relation(fields: [categoryId], references: [id])
+  companyName     String?       @default("Flexia")
   imageKey        String        @default("catering")
   employmentType  String[]
   city            String        @default("Den Haag")

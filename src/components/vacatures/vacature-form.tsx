@@ -34,6 +34,7 @@ type VacatureData = {
   requirements: string[];
   benefits: string[];
   categoryId: string | null;
+  companyName?: string;
   imageKey: string;
   employmentType: string[];
   city: string;
@@ -54,6 +55,7 @@ const defaultData: VacatureData = {
   requirements: [""],
   benefits: [""],
   categoryId: null,
+  companyName: "Flexia",
   imageKey: "catering",
   employmentType: ["FULL_TIME"],
   city: "Den Haag",
@@ -393,6 +395,14 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               value={data.location}
               onChange={(e) => setData({ ...data, location: e.target.value })}
               placeholder="Bijv. Binckhorstlaan 36, Den Haag"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Bedrijfsnaam (optioneel)</Label>
+            <Input
+              value={data.companyName || "Flexia"}
+              onChange={(e) => setData({ ...data, companyName: e.target.value })}
+              placeholder="Flexia"
             />
           </div>
           <div className="grid grid-cols-3 gap-4">

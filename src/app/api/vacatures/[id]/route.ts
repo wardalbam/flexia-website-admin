@@ -14,6 +14,7 @@ const vacatureSchema = z.object({
   requirements: z.array(z.string()).min(1),
   benefits: z.array(z.string()).min(1),
   categoryId: z.string().nullable(),
+  companyName: z.string().optional(),
   imageKey: z.string().min(1),
   employmentType: z.array(z.string()).min(1),
   city: z.string().min(1),
