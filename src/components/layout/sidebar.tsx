@@ -16,6 +16,9 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
 
+  // Hide the sidebar on the login page
+  if (pathname === "/login") return null;
+
   return (
     <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card">
       <div className="flex h-full flex-col">

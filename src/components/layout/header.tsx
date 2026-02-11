@@ -11,6 +11,9 @@ export function Header({ title }: { title?: string }) {
   const { data: session } = useSession();
   const pathname = usePathname() || "/";
 
+  // Don't render the header on the login page
+  if (pathname === "/login") return null;
+
   // Compute a friendly title from the pathname when no explicit title is passed.
   const inferredTitle = title || (() => {
     if (pathname === "/" || pathname === "") return "Dashboard";
