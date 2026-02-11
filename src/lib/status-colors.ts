@@ -110,6 +110,7 @@ const defaultCategoryColor = {
   accent: "bg-gray-500"
 };
 
-export function getCategoryColor(category: string) {
-  return categoryColors[category] || defaultCategoryColor;
+export function getCategoryColor(categoryName?: string | null) {
+  if (!categoryName) return defaultCategoryColor;
+  return categoryColors[categoryName] || defaultCategoryColor;
 }
