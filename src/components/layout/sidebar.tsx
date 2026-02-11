@@ -45,12 +45,15 @@ export function Sidebar() {
             const isActive =
               item.href === "/"
                 ? pathname === "/"
+                : item.href === "/settings"
+                ? pathname === "/settings"
                 : pathname.startsWith(item.href);
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all",
                   isActive

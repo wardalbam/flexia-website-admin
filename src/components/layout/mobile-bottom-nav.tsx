@@ -25,12 +25,15 @@ export function MobileBottomNav() {
           const isActive =
             item.href === "/"
               ? pathname === "/"
+              : item.href === "/settings"
+              ? pathname === "/settings"
               : pathname.startsWith(item.href);
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all flex-1 max-w-[100px]",
                 isActive

@@ -36,6 +36,12 @@ export async function GET(
     include: {
       _count: { select: { applications: true } },
       category: true,
+      createdBy: {
+        select: { name: true, email: true },
+      },
+      lastUpdatedBy: {
+        select: { name: true, email: true },
+      },
     },
   });
 
