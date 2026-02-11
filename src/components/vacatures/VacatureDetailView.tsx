@@ -64,7 +64,9 @@ export function VacatureDetailView({
   const daysOnline = getDaysOnline(selectedVacature.publishedAt);
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] overflow-hidden">
+    // Make layout flow naturally (no fixed outer height) so mobile scroll is the page's
+    // responsibility and we avoid nested scroll gaps. Stack on mobile, row on large.
+    <div className="flex flex-col lg:flex-row">
       {/* Sidebar with Vacature List - Desktop Only */}
       <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
         <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
@@ -127,11 +129,13 @@ export function VacatureDetailView({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className={cn(
-          "max-w-4xl mx-auto p-6 space-y-8 transition-opacity duration-200",
-          isLoading && "opacity-50 pointer-events-none"
-        )}>
+      <main className="flex-1">
+        <div
+          className={cn(
+            "max-w-4xl mx-auto p-6 space-y-8 transition-opacity duration-200",
+            isLoading && "opacity-50 pointer-events-none"
+          )}
+        >
           {/* Back Button - Mobile Only */}
           <div className="lg:hidden">
             <a href="/vacatures">
