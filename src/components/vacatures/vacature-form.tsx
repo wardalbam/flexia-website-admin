@@ -207,7 +207,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           <CardTitle>Basis Informatie</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Titel</Label>
               <Input
@@ -227,7 +227,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Slug (URL)</Label>
               <Input
@@ -287,7 +287,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       </Card>
 
       {/* Requirements & Benefits */}
-      <div className="grid grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Vereisten</CardTitle>
@@ -345,7 +345,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           <CardTitle>Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Categorie</Label>
               <Select
@@ -445,15 +445,15 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-between gap-3">
-        <div>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3">
+        <div className="mt-3 sm:mt-0">
           {isEditing && (
             <Button
               type="button"
               variant={isArchived ? "default" : "outline"}
               onClick={handleArchiveToggle}
               disabled={archiving}
-              className={isArchived ? "" : "text-orange-600 hover:text-orange-700"}
+              className={`${isArchived ? "" : "text-orange-600 hover:text-orange-700"} w-full sm:w-auto`}
             >
               {isArchived ? (
                 <>
@@ -469,11 +469,11 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
             </Button>
           )}
         </div>
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={() => router.back()}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto">
             Annuleren
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving} className="w-full sm:w-auto">
             <Save className="h-4 w-4 mr-2" />
             {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
           </Button>
