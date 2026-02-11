@@ -1,0 +1,91 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  hashedPassword String
+  role           UserRole @default(ADMIN)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Vacature {
+  id              String           @id @default(cuid())
+  slug            String           @unique
+  vacatureNumber  Int              @unique
+  title           String
+  subtitle        String
+  description     String
+  longDescription String           @db.Text
+  seoContent      String           @db.Text
+  requirements    String[]
+  benefits        String[]
+  category        VacatureCategory
+  imageKey        String           @default("catering")
+  employmentType  String[]
+  location        String
+  salary          Float            @default(17.00)
+  isActive        Boolean          @default(true)
+  publishedAt     DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  applications    Application[]
+
+  @@map("vacatures")
+}
+
+enum VacatureCategory {
+  CATERING
+  SPOELKEUKEN
+  KEUKENHULP
+  BEDIENING
+}
+
+model Application {
+  id                String            @id @default(cuid())
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  birthDate         String?
+  city              String?
+  gender            String?
+  experience        String?           @db.Text
+  selectedVacatures String[]
+  availability      String[]
+  status            ApplicationStatus @default(NEW)
+  notes             String?           @db.Text
+  source            String            @default("website")
+  vacatureId        String?
+  vacature          Vacature?         @relation(fields: [vacatureId], references: [id], onDelete: SetNull)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@map("applications")
+}
+
+enum ApplicationStatus {
+  NEW
+  REVIEWED
+  CONTACTED
+  INTERVIEW_SCHEDULED
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
