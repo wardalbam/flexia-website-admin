@@ -23,7 +23,8 @@ const vacatureSchema = z.object({
 
 // GET /api/vacatures - Public endpoint
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  // Use req.nextUrl which is a safe URL object provided by Next.js
+  const { searchParams } = req.nextUrl;
   const active = searchParams.get("active");
   const category = searchParams.get("category");
   const location = searchParams.get("location");

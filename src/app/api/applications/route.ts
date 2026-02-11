@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Niet geautoriseerd" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
+  // Use req.nextUrl which is a safe URL object provided by Next.js
+  const { searchParams } = req.nextUrl;
   const status = searchParams.get("status");
   const search = searchParams.get("search");
   const page = parseInt(searchParams.get("page") || "1");
