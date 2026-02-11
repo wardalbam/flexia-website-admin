@@ -5,7 +5,8 @@ import { Zap, Search, Phone, ArrowRight, Briefcase } from "lucide-react";
 
 async function getVacatureCount() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/vacatures?active=true`, {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const res = await fetch(`${apiUrl}/api/vacatures?active=true`, {
       cache: 'no-store'
     });
     if (res.ok) {

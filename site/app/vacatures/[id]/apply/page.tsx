@@ -26,7 +26,9 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchVacature = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL ??
+          (typeof window !== "undefined" ? window.location.origin : "");
         const res = await fetch(`${apiUrl}/api/vacatures/${id}`);
         if (res.ok) {
           const data = await res.json();
@@ -46,7 +48,7 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
       const res = await fetch(`${apiUrl}/api/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,8 +81,8 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
   if (success) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12 space-y-4">
-        <div className="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
+        <div className="mx-auto w-16 h-16 bg-sky-500/10 rounded-full flex items-center justify-center">
+          <CheckCircle2 className="h-8 w-8 text-sky-600" />
         </div>
         <h2 className="text-3xl font-black">Bedankt voor je sollicitatie!</h2>
         <p className="text-muted-foreground">

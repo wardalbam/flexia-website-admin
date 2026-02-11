@@ -37,11 +37,11 @@ export default function VacaturesPage() {
   useEffect(() => {
     const fetchVacatures = async () => {
       try {
-  // Use a relative API URL in production when NEXT_PUBLIC_API_URL is not set
-  // Falling back to an empty string makes the request go to the same origin
-  // (e.g. https://yourdomain.com/api/...) instead of localhost which fails on Vercel.
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const res = await fetch(`${apiUrl}/api/vacatures?active=true`);
+        // Resolve API URL at runtime: prefer NEXT_PUBLIC_API_URL, fall back to current origin.
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL ??
+          (typeof window !== "undefined" ? window.location.origin : "");
+        const res = await fetch(`${apiUrl}/api/vacatures?active=true`);
         if (res.ok) {
           const data = await res.json();
           setVacatures(data);
@@ -171,7 +171,7 @@ export default function VacaturesPage() {
                   </div>
 
                   {/* Title - Primary Hierarchy */}
-                  <h3 className="font-black text-lg tracking-tight line-clamp-2 mb-2 pr-12 group-hover:text-primary transition-colors">
+                  <h3 className="text-xl md:text-lg font-extrabold tracking-tight line-clamp-2 mb-2 pr-12 group-hover:text-primary transition-colors">
                     {v.title}
                   </h3>
 
@@ -179,7 +179,7 @@ export default function VacaturesPage() {
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <Badge
                       className={cn(
-                        "rounded-full text-xs px-2 py-0.5",
+                        "rounded-full text-xs px-2 py-0.5 font-semibold",
                         categoryColor.bg,
                         categoryColor.text,
                         "border",

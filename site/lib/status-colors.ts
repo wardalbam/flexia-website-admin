@@ -13,7 +13,7 @@ export const statusColorClasses: Record<string, string> = {
   REVIEWED: "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300 border border-yellow-500/20",
   CONTACTED: "bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-500/20",
   INTERVIEW_SCHEDULED: "bg-orange-500/10 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 border border-orange-500/20",
-  HIRED: "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-300 border border-green-500/20",
+  HIRED: "bg-sky-500/10 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-500/20",
   REJECTED: "bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-300 border border-red-500/20",
   WITHDRAWN: "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300 border border-gray-500/20",
 };
@@ -36,9 +36,9 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     border: "border-purple-500/20"
   },
   "Schoonmaak": {
-    bg: "bg-green-500/10",
-    text: "text-green-700 dark:text-green-300",
-    border: "border-green-500/20"
+    bg: "bg-amber-500/10",
+    text: "text-amber-700 dark:text-amber-300",
+    border: "border-amber-500/20"
   },
   "Zorg": {
     bg: "bg-pink-500/10",

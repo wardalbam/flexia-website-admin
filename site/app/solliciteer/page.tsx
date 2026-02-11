@@ -20,7 +20,7 @@ export default function GeneralApplicationPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
       const res = await fetch(`${apiUrl}/api/applications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
