@@ -1,5 +1,3 @@
-import { Sidebar } from "@/components/layout/sidebar";
-
 export default function DashboardLayout({
   children,
 }: {
@@ -7,10 +5,8 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen">
-      <Sidebar />
-      <main className="ml-64">
-        {children}
-      </main>
+      {/* Root layout already provides the global Sidebar and Header. */}
+      {children}
     </div>
   );
 }

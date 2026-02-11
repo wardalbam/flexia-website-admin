@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/layout/header";
+// Header is now global in RootLayout
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,8 +53,8 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header title="Instellingen" />
-      <main className="p-6 space-y-6 max-w-2xl">
+      <main className="p-4 space-y-6 max-w-2xl">
+        {/* header shows the page title */}
         <Card>
           <CardHeader>
             <CardTitle>Wachtwoord Wijzigen</CardTitle>

@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/header";
+// Header is now global in RootLayout
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,8 +60,7 @@ export default async function ApplicationsPage({
 
   return (
     <>
-      <Header title="Sollicitaties" />
-      <main className="p-6 space-y-6">
+      <main className="p-4 space-y-6">
         {/* Filters */}
         <div className="flex gap-3 flex-wrap">
           <form className="flex gap-3 flex-wrap" action="/applications" method="GET">
@@ -106,7 +105,7 @@ export default async function ApplicationsPage({
               </CardContent>
             </Card>
           ) : (
-            applications.map((app) => (
+          applications.map((app: any) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
                 <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                   <CardContent className="flex items-center justify-between py-4">

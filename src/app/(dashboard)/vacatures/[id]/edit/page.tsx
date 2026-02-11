@@ -1,4 +1,3 @@
-import { Header } from "@/components/layout/header";
 import { VacatureForm } from "@/components/vacatures/vacature-form";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -17,10 +16,9 @@ export default async function EditVacaturePage({
   }
 
   return (
-    <>
-      <Header title={`Bewerken: ${vacature.title}`} />
-      <main className="p-6">
-        <VacatureForm
+    <main className="p-4">
+      {/* header shows the page title */}
+      <VacatureForm
           initialData={{
             id: vacature.id,
             title: vacature.title,
@@ -41,6 +39,5 @@ export default async function EditVacaturePage({
           }}
         />
       </main>
-    </>
   );
 }

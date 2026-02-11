@@ -1,5 +1,9 @@
+import dotenv from "dotenv";
 import { PrismaClient, VacatureCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
+
+// Load local environment variables so this script can run outside Next.js
+dotenv.config({ path: ".env.local" });
 
 const prisma = new PrismaClient();
 

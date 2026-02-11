@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/layout/header";
+// Header is now global in RootLayout
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -112,8 +112,8 @@ export default function ApplicationDetailPage() {
   if (loading) {
     return (
       <>
-        <Header title="Sollicitatie laden..." />
-        <main className="p-6">
+      <main className="p-4">
+        {/* header shows the page title */}
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3" />
             <div className="h-32 bg-muted rounded" />
@@ -126,8 +126,8 @@ export default function ApplicationDetailPage() {
   if (!application) {
     return (
       <>
-        <Header title="Niet gevonden" />
-        <main className="p-6">
+        <main className="p-4">
+          {/* header shows the page title */}
           <p className="text-muted-foreground">Sollicitatie niet gevonden.</p>
           <Link href="/applications" className="text-primary hover:underline text-sm mt-2 inline-block">
             Terug naar overzicht
@@ -139,8 +139,10 @@ export default function ApplicationDetailPage() {
 
   return (
     <>
-      <Header title={`${application.firstName} ${application.lastName}`} />
-      <main className="p-6 space-y-6">
+      <main className="p-4 space-y-6">
+        {/* header shows the page title. For detail pages we keep the header generic (Sollicitaties).
+            If you'd like the applicant name in the header we can compute it client-side or
+            wire a context — for now the header remains the single source of truth. */}
         <Link
           href="/applications"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

@@ -1,9 +1,8 @@
-import { Header } from "@/components/layout/header";
+// Header is now global in RootLayout
+import VacatureList from "@/components/vacatures/VacatureList";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
-import { Plus, Pencil, MapPin } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const categoryLabels: Record<string, string> = {
@@ -21,8 +20,9 @@ export default async function VacaturesPage() {
 
   return (
     <>
-      <Header title="Vacatures" />
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-6">
+        {/* header shows the page title */}
+        <div className="pt-2" />
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground">
             {vacatures.length} vacatures totaal
@@ -35,50 +35,7 @@ export default async function VacaturesPage() {
           </Link>
         </div>
 
-        <div className="grid gap-4">
-          {vacatures.map((v) => (
-            <Card key={v.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[60px]">
-                      <p className="text-xs text-muted-foreground">#{v.vacatureNumber}</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{v.title}</h3>
-                        {!v.isActive && (
-                          <Badge variant="secondary" className="bg-red-100 text-red-800">
-                            Inactief
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <Badge variant="outline">{categoryLabels[v.category]}</Badge>
-                        <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {v.location}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {v.employmentType.map(t => t.replace("_", " ").toLowerCase()).join(", ")}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {v._count.applications} sollicitaties
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Link href={`/vacatures/${v.id}/edit`}>
-                    <Button variant="outline" size="sm">
-                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                      Bewerken
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <VacatureList initialVacatures={JSON.parse(JSON.stringify(vacatures))} />
       </div>
     </>
   );

@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local
+
+# ignore nested node_modules for the site app
+site/node_modules
+
+# ignore site build output
+site/.next
