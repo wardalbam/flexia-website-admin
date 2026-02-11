@@ -18,16 +18,17 @@ export const metadata: Metadata = {
   description: "Admin paneel voor Flexia Jobs",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Read request headers set by middleware. When the login page is requested
   // the middleware will add `x-hide-layout: 1` so we can avoid rendering the
-  // Sidebar and Header for that route.
-  const reqHeaders = headers() as unknown as { get?: (name: string) => string | null };
-  const hideLayout = reqHeaders.get?.("x-hide-layout") === "1";
+  // Sidebar and Header for that route. `headers()` must be awaited in server
+  // components before accessing `.get()`.
+  const reqHeaders = await headers();
+  const hideLayout = reqHeaders.get("x-hide-layout") === "1";
   return (
     <html lang="nl">
       <body className={`${inter.className} antialiased`}>
