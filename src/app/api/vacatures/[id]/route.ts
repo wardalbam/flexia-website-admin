@@ -3,6 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
+// Allowed origins for CORS (site app)
+const SITE_ORIGIN = process.env.SITE_ORIGIN || "http://localhost:3001";
+const DEV_ORIGINS = [
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
+];
+
+function isOriginAllowed(origin: string | null) {
+  if (!origin) return false;
+  if (process.env.NODE_ENV === "development") {
+    return DEV_ORIGINS.includes(origin) || origin === SITE_ORIGIN;
+  }
+  return origin === SITE_ORIGIN;
+}
+
 const vacatureSchema = z.object({
   title: z.string().min(1),
   subtitle: z.string().min(1),
@@ -23,11 +38,12 @@ const vacatureSchema = z.object({
   isActive: z.boolean(),
 });
 
-// GET /api/vacatures/[id] - Public (accepts id or slug)
+// GET /api/vacatures/[id] - Public with CORS (accepts id or slug)
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const origin = req.headers.get("origin");
   const { id } = await params;
 
   const vacature = await prisma.vacature.findFirst({
@@ -47,10 +63,23 @@ export async function GET(
   });
 
   if (!vacature) {
-    return NextResponse.json({ error: "Vacature niet gevonden" }, { status: 404 });
+    const response = NextResponse.json({ error: "Vacature niet gevonden" }, { status: 404 });
+    if (origin && isOriginAllowed(origin)) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+    }
+    return response;
   }
 
-  return NextResponse.json(vacature);
+  const response = NextResponse.json(vacature);
+
+  // Add CORS headers if origin is allowed
+  if (origin && isOriginAllowed(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  }
+
+  return response;
 }
 
 // PUT /api/vacatures/[id] - Protected
@@ -132,4 +161,19 @@ export async function DELETE(
 
   await prisma.vacature.delete({ where: { id } });
   return NextResponse.json({ success: true });
+}
+
+// OPTIONS handler for CORS preflight
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+
+  if (!origin || !isOriginAllowed(origin)) {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  const response = new NextResponse(null, { status: 204 });
+  response.headers.set("Access-Control-Allow-Origin", origin);
+  response.headers.set("Access-Control-Allow-Methods", "GET, PUT, DELETE, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
 }
