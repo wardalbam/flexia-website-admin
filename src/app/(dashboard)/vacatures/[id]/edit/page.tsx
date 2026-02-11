@@ -9,7 +9,12 @@ export default async function EditVacaturePage({
 }) {
   const { id } = await params;
 
-  const vacature = await prisma.vacature.findUnique({ where: { id } });
+  const vacature = await prisma.vacature.findUnique({
+    where: { id },
+    include: {
+      category: true,
+    },
+  });
 
   if (!vacature) {
     notFound();
@@ -30,12 +35,14 @@ export default async function EditVacaturePage({
             seoContent: vacature.seoContent,
             requirements: vacature.requirements,
             benefits: vacature.benefits,
-            category: vacature.category,
+            categoryId: vacature.categoryId,
             imageKey: vacature.imageKey,
             employmentType: vacature.employmentType,
-            location: vacature.location,
+            city: vacature.city,
+            location: vacature.location || "",
             salary: vacature.salary,
             isActive: vacature.isActive,
+            archived: vacature.archived,
           }}
         />
       </main>

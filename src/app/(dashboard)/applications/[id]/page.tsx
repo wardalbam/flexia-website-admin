@@ -29,7 +29,11 @@ type Application = {
   notes?: string | null;
   source: string;
   createdAt: string;
-  vacature?: { title: string; category: string; slug: string } | null;
+  vacature?: {
+    title: string;
+    category: { name: string } | null;
+    slug: string;
+  } | null;
 };
 
 const statusLabels: Record<string, string> = {

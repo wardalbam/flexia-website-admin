@@ -13,10 +13,11 @@ const vacatureSchema = z.object({
   seoContent: z.string().min(1),
   requirements: z.array(z.string()).min(1),
   benefits: z.array(z.string()).min(1),
-  category: z.enum(["CATERING", "SPOELKEUKEN", "KEUKENHULP", "BEDIENING"]),
+  categoryId: z.string().nullable(),
   imageKey: z.string().min(1),
   employmentType: z.array(z.string()).min(1),
-  location: z.string().min(1),
+  city: z.string().min(1),
+  location: z.string().optional(),
   salary: z.number().positive(),
   isActive: z.boolean(),
 });
@@ -26,18 +27,21 @@ export async function GET(req: NextRequest) {
   // Use req.nextUrl which is a safe URL object provided by Next.js
   const { searchParams } = req.nextUrl;
   const active = searchParams.get("active");
-  const category = searchParams.get("category");
-  const location = searchParams.get("location");
+  const categoryId = searchParams.get("categoryId");
+  const city = searchParams.get("city");
 
   const where: Record<string, unknown> = {};
   if (active !== null) where.isActive = active === "true";
-  if (category) where.category = category;
-  if (location) where.location = location;
+  if (categoryId) where.categoryId = categoryId;
+  if (city) where.city = city;
 
   const vacatures = await prisma.vacature.findMany({
     where,
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { applications: true } } },
+    include: {
+      _count: { select: { applications: true } },
+      category: true,
+    },
   });
 
   return NextResponse.json(vacatures);
@@ -73,6 +77,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const vacature = await prisma.vacature.create({ data: parsed.data });
+  const vacature = await prisma.vacature.create({
+    data: {
+      ...parsed.data,
+      createdById: session.user?.id,
+      lastUpdatedById: session.user?.id,
+    },
+  });
   return NextResponse.json(vacature, { status: 201 });
 }

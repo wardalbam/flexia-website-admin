@@ -22,7 +22,13 @@ export async function GET(
 
   const application = await prisma.application.findUnique({
     where: { id },
-    include: { vacature: true },
+    include: {
+      vacature: {
+        include: {
+          category: true,
+        },
+      },
+    },
   });
 
   if (!application) {
@@ -58,7 +64,13 @@ export async function PATCH(
   const application = await prisma.application.update({
     where: { id },
     data: parsed.data,
-    include: { vacature: true },
+    include: {
+      vacature: {
+        include: {
+          category: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json(application);

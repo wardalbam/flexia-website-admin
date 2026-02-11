@@ -9,13 +9,15 @@ generator client {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  name           String?
-  hashedPassword String
-  role           UserRole @default(ADMIN)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                     String      @id @default(cuid())
+  email                  String      @unique
+  name                   String?
+  hashedPassword         String
+  role                   UserRole    @default(ADMIN)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  createdVacatures       Vacature[]  @relation("CreatedByUser")
+  lastUpdatedVacatures   Vacature[]  @relation("LastUpdatedByUser")
 
   @@map("users")
 }
@@ -26,37 +28,51 @@ enum UserRole {
   SUPER_ADMIN
 }
 
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  color       String?    @default("#3b82f6")
+  icon        String?    @default("Briefcase")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  vacatures   Vacature[]
+
+  @@map("categories")
+}
+
 model Vacature {
-  id              String           @id @default(cuid())
-  slug            String           @unique
-  vacatureNumber  Int              @unique
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  vacatureNumber  Int           @unique
   title           String
   subtitle        String
   description     String
-  longDescription String           @db.Text
-  seoContent      String           @db.Text
+  longDescription String        @db.Text
+  seoContent      String        @db.Text
   requirements    String[]
   benefits        String[]
-  category        VacatureCategory
-  imageKey        String           @default("catering")
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id])
+  imageKey        String        @default("catering")
   employmentType  String[]
-  location        String
-  salary          Float            @default(17.00)
-  isActive        Boolean          @default(true)
-  archived        Boolean          @default(false)
-  publishedAt     DateTime         @default(now())
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  city            String        @default("Den Haag")
+  location        String?       @db.Text
+  salary          Float         @default(17.00)
+  isActive        Boolean       @default(true)
+  archived        Boolean       @default(false)
+  publishedAt     DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdById     String?
+  createdBy       User?         @relation("CreatedByUser", fields: [createdById], references: [id], onDelete: SetNull)
+  lastUpdatedById String?
+  lastUpdatedBy   User?         @relation("LastUpdatedByUser", fields: [lastUpdatedById], references: [id], onDelete: SetNull)
   applications    Application[]
 
   @@map("vacatures")
-}
-
-enum VacatureCategory {
-  CATERING
-  SPOELKEUKEN
-  KEUKENHULP
-  BEDIENING
 }
 
 model Application {

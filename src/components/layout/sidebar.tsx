@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Briefcase, Users, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, Settings, LogOut, Layers, UserCog } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/vacatures", label: "Vacatures", icon: Briefcase },
   { href: "/applications", label: "Sollicitaties", icon: Users },
+  { href: "/settings/categories", label: "Categorieën", icon: Layers, adminOnly: true },
+  { href: "/settings/users", label: "Gebruikers", icon: UserCog, adminOnly: true },
   { href: "/settings", label: "Instellingen", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   // Hide the sidebar on the login page
   if (pathname === "/login") return null;
@@ -33,6 +39,9 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4">
           {navItems.map((item) => {
+            // Hide admin-only items from non-admins
+            if (item.adminOnly && !isAdmin) return null;
+
             const isActive =
               item.href === "/"
                 ? pathname === "/"

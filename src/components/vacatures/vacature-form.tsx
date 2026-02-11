@@ -7,10 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, Save } from "lucide-react";
+import { Plus, X, Save, Archive, ArchiveRestore } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string | null;
+  isActive: boolean;
+};
 
 type VacatureData = {
   id?: string;
@@ -23,12 +33,14 @@ type VacatureData = {
   seoContent: string;
   requirements: string[];
   benefits: string[];
-  category: string;
+  categoryId: string | null;
   imageKey: string;
   employmentType: string[];
+  city: string;
   location: string;
   salary: number;
   isActive: boolean;
+  archived?: boolean;
 };
 
 const defaultData: VacatureData = {
@@ -41,19 +53,44 @@ const defaultData: VacatureData = {
   seoContent: "",
   requirements: [""],
   benefits: [""],
-  category: "CATERING",
+  categoryId: null,
   imageKey: "catering",
   employmentType: ["FULL_TIME"],
-  location: "Den Haag",
+  city: "Den Haag",
+  location: "",
   salary: 17.0,
   isActive: true,
 };
 
 export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [data, setData] = useState<VacatureData>(initialData || defaultData);
   const [saving, setSaving] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const isEditing = !!initialData?.id;
+  const isArchived = initialData?.archived === true;
+  const userRole = (session?.user as any)?.role;
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const generateSlug = (title: string) => {
     return title
@@ -125,6 +162,38 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       toast.error(error instanceof Error ? error.message : "Er is iets misgegaan");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleArchiveToggle = async () => {
+    if (!isEditing || !initialData?.id) return;
+
+    const confirmMessage = isArchived
+      ? "Weet je zeker dat je deze vacature wilt terughalen uit het archief?"
+      : "Weet je zeker dat je deze vacature wilt archiveren? Gearchiveerde vacatures zijn niet zichtbaar voor sollicitanten.";
+
+    if (!confirm(confirmMessage)) return;
+
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/vacatures/${initialData.id}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: !isArchived }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Er is iets misgegaan");
+      }
+
+      toast.success(isArchived ? "Vacature teruggehaald uit archief" : "Vacature gearchiveerd");
+      router.push("/vacatures");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Er is iets misgegaan");
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -277,13 +346,20 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Categorie</Label>
-              <Select value={data.category} onValueChange={(v) => setData({ ...data, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={data.categoryId || ""}
+                onValueChange={(v) => setData({ ...data, categoryId: v })}
+                disabled={loadingCategories}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingCategories ? "Laden..." : "Selecteer categorie"} />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CATERING">Catering</SelectItem>
-                  <SelectItem value="SPOELKEUKEN">Spoelkeuken</SelectItem>
-                  <SelectItem value="KEUKENHULP">Keukenhulp</SelectItem>
-                  <SelectItem value="BEDIENING">Bediening</SelectItem>
+                  {categories.filter(c => c.isActive).map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -299,15 +375,25 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Locatie</Label>
-              <Select value={data.location} onValueChange={(v) => setData({ ...data, location: v })}>
+              <Label>Stad</Label>
+              <Select value={data.city} onValueChange={(v) => setData({ ...data, city: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Den Haag">Den Haag</SelectItem>
                   <SelectItem value="Leiden">Leiden</SelectItem>
+                  <SelectItem value="Rotterdam">Rotterdam</SelectItem>
+                  <SelectItem value="Amsterdam">Amsterdam</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Locatie (optioneel)</Label>
+            <Input
+              value={data.location}
+              onChange={(e) => setData({ ...data, location: e.target.value })}
+              placeholder="Bijv. Binckhorstlaan 36, Den Haag"
+            />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
@@ -349,14 +435,39 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          Annuleren
-        </Button>
-        <Button type="submit" disabled={saving}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
-        </Button>
+      <div className="flex justify-between gap-3">
+        <div>
+          {isEditing && (
+            <Button
+              type="button"
+              variant={isArchived ? "default" : "outline"}
+              onClick={handleArchiveToggle}
+              disabled={archiving}
+              className={isArchived ? "" : "text-orange-600 hover:text-orange-700"}
+            >
+              {isArchived ? (
+                <>
+                  <ArchiveRestore className="h-4 w-4 mr-2" />
+                  {archiving ? "Terughalen..." : "Terughalen uit Archief"}
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4 mr-2" />
+                  {archiving ? "Archiveren..." : "Archiveren"}
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" onClick={() => router.back()}>
+            Annuleren
+          </Button>
+          <Button type="submit" disabled={saving}>
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
+          </Button>
+        </div>
       </div>
     </form>
   );

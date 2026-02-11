@@ -36,6 +36,13 @@ export default async function VacatureDetailPage({
       _count: {
         select: { applications: true },
       },
+      createdBy: {
+        select: { name: true, email: true },
+      },
+      lastUpdatedBy: {
+        select: { name: true, email: true },
+      },
+      category: true,
     },
   });
 
@@ -43,18 +50,25 @@ export default async function VacatureDetailPage({
     notFound();
   }
 
-  // Fetch all vacatures for sidebar
+  // Fetch recent vacatures for sidebar (optimized - only essential fields)
   const allVacatures = await prisma.vacature.findMany({
     orderBy: { publishedAt: "desc" },
-    take: 50,
-    include: {
+    take: 25,
+    select: {
+      id: true,
+      title: true,
+      category: {
+        select: { name: true },
+      },
+      vacatureNumber: true,
+      isActive: true,
       _count: {
         select: { applications: true },
       },
     },
   });
 
-  const categoryColor = getCategoryColor(vacature.category);
+  const categoryColor = getCategoryColor(vacature.category?.name);
   const daysOnline = getDaysOnline(vacature.publishedAt);
 
   return (
@@ -72,7 +86,7 @@ export default async function VacatureDetailPage({
         <div className="p-3 space-y-2">
           {allVacatures.map((v) => {
             const isActive = v.id === vacature.id;
-            const vCategoryColor = getCategoryColor(v.category);
+            const vCategoryColor = getCategoryColor(v.category?.name);
             return (
               <Link key={v.id} href={`/vacatures/${v.id}`}>
                 <div
@@ -103,7 +117,7 @@ export default async function VacatureDetailPage({
                         vCategoryColor.border
                       )}
                     >
-                      {v.category}
+                      {v.category?.name}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -145,7 +159,7 @@ export default async function VacatureDetailPage({
                   categoryColor.border
                 )}
               >
-                {vacature.category}
+                {vacature.category?.name}
               </Badge>
               {!vacature.isActive && (
                 <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
@@ -192,7 +206,9 @@ export default async function VacatureDetailPage({
 
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">{vacature.location}</span>
+                <span className="font-semibold">
+                  {vacature.location || vacature.city}
+                </span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -279,7 +295,7 @@ export default async function VacatureDetailPage({
           )}
 
           {/* Metadata Footer */}
-          <div className="pt-6 border-t border-border text-sm text-muted-foreground">
+          <div className="pt-6 border-t border-border text-sm text-muted-foreground space-y-3">
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               <span>
                 Gepubliceerd:{" "}
@@ -301,6 +317,24 @@ export default async function VacatureDetailPage({
                   })}
                 </strong>
               </span>
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {vacature.createdBy && (
+                <span>
+                  Aangemaakt door:{" "}
+                  <strong className="text-foreground">
+                    {vacature.createdBy.name || vacature.createdBy.email}
+                  </strong>
+                </span>
+              )}
+              {vacature.lastUpdatedBy && (
+                <span>
+                  Laatst bewerkt door:{" "}
+                  <strong className="text-foreground">
+                    {vacature.lastUpdatedBy.name || vacature.lastUpdatedBy.email}
+                  </strong>
+                </span>
+              )}
             </div>
           </div>
         </div>

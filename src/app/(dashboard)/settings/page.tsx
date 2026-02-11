@@ -55,6 +55,7 @@ export default function SettingsPage() {
     <>
       <main className="p-4 space-y-6 max-w-2xl">
         {/* header shows the page title */}
+
         <Card>
           <CardHeader>
             <CardTitle>Wachtwoord Wijzigen</CardTitle>

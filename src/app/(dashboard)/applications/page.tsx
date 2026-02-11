@@ -45,7 +45,17 @@ export default async function ApplicationsPage({
   const [applications, total] = await Promise.all([
     prisma.application.findMany({
       where,
-      include: { vacature: { select: { title: true, category: true, vacatureNumber: true } } },
+      include: {
+        vacature: {
+          select: {
+            title: true,
+            category: {
+              select: { name: true },
+            },
+            vacatureNumber: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,

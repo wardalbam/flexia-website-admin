@@ -23,14 +23,15 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedEmployment, setSelectedEmployment] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("active");
+  const [showArchived, setShowArchived] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("newest");
 
   const categories = useMemo(() => {
-    return Array.from(new Set(initialVacatures.map(v => v.category))).filter(Boolean) as string[];
+    return Array.from(new Set(initialVacatures.map(v => v.category?.name))).filter(Boolean) as string[];
   }, [initialVacatures]);
 
   const locations = useMemo(() => {
-    return Array.from(new Set(initialVacatures.map(v => v.location))).filter(Boolean) as string[];
+    return Array.from(new Set(initialVacatures.map(v => v.city))).filter(Boolean) as string[];
   }, [initialVacatures]);
 
   const employmentTypes = useMemo(() => {
@@ -39,9 +40,11 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
 
   const filtered = useMemo(() => {
     let result = initialVacatures.filter((v) => {
+      // Filter out archived vacatures by default
+      if (!showArchived && v.archived === true) return false;
       if (activeFilter === "active" && v.isActive === false) return false;
-      if (selectedCategories.length && !selectedCategories.includes(v.category)) return false;
-      if (selectedLocations.length && !selectedLocations.includes(v.location)) return false;
+      if (selectedCategories.length && !selectedCategories.includes(v.category?.name)) return false;
+      if (selectedLocations.length && !selectedLocations.includes(v.city)) return false;
       if (selectedEmployment.length && !v.employmentType.some((t: string) => selectedEmployment.includes(t))) return false;
       return true;
     });
@@ -143,6 +146,16 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
             </SelectContent>
           </Select>
 
+          {/* Show Archived Toggle */}
+          <Button
+            variant={showArchived ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowArchived(!showArchived)}
+            className="px-6 py-4 text-sm font-bold transition-all rounded-xl"
+          >
+            {showArchived ? "Toon Gearchiveerd" : "Verberg Archief"}
+          </Button>
+
           {/* Reset Button */}
           <Button
             variant="ghost"
@@ -152,6 +165,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
               setSelectedLocations([]);
               setSelectedEmployment([]);
               setActiveFilter("active");
+              setShowArchived(false);
             }}
             className="px-6 py-4 text-sm font-bold hover:bg-red-100/50 hover:text-red-700 transition-all rounded-xl"
           >
@@ -203,7 +217,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
       {/* Vacature List - 3 Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((v) => {
-          const categoryColor = getCategoryColor(v.category);
+          const categoryColor = getCategoryColor(v.category?.name);
           const applicationsCount = v._count?.applications ?? 0;
           const dateAdded = v.createdAt || v.publishedAt;
 
@@ -227,7 +241,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
                         "border",
                         categoryColor.border
                       )}>
-                        {v.category}
+                        {v.category?.name}
                       </Badge>
                       {/* Company Name */}
                       {v.companyName && (
@@ -242,7 +256,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
                   <div className="space-y-2 mb-4 flex-1">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                       <MapPin className="h-3.5 w-3.5" />
-                      {v.location}
+                      {v.city}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                       <Briefcase className="h-3.5 w-3.5" />

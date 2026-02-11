@@ -13,10 +13,11 @@ const vacatureSchema = z.object({
   seoContent: z.string().min(1),
   requirements: z.array(z.string()).min(1),
   benefits: z.array(z.string()).min(1),
-  category: z.enum(["CATERING", "SPOELKEUKEN", "KEUKENHULP", "BEDIENING"]),
+  categoryId: z.string().nullable(),
   imageKey: z.string().min(1),
   employmentType: z.array(z.string()).min(1),
-  location: z.string().min(1),
+  city: z.string().min(1),
+  location: z.string().optional(),
   salary: z.number().positive(),
   isActive: z.boolean(),
 });
@@ -32,7 +33,10 @@ export async function GET(
     where: {
       OR: [{ id }, { slug: id }],
     },
-    include: { _count: { select: { applications: true } } },
+    include: {
+      _count: { select: { applications: true } },
+      category: true,
+    },
   });
 
   if (!vacature) {
@@ -84,13 +88,16 @@ export async function PUT(
 
   const vacature = await prisma.vacature.update({
     where: { id },
-    data: parsed.data,
+    data: {
+      ...parsed.data,
+      lastUpdatedById: session.user?.id,
+    },
   });
 
   return NextResponse.json(vacature);
 }
 
-// DELETE /api/vacatures/[id] - Protected
+// DELETE /api/vacatures/[id] - Protected (Admin only)
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -98,6 +105,15 @@ export async function DELETE(
   const session = await auth();
   if (!session) {
     return NextResponse.json({ error: "Niet geautoriseerd" }, { status: 401 });
+  }
+
+  // Only ADMIN and SUPER_ADMIN can delete vacatures
+  const userRole = (session.user as any)?.role;
+  if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Je hebt geen rechten om vacatures te verwijderen. Alleen admins kunnen dit doen." },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;

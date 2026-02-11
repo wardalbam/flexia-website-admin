@@ -15,7 +15,10 @@ const categoryLabels: Record<string, string> = {
 export default async function VacaturesPage() {
   const vacatures = await prisma.vacature.findMany({
     orderBy: { vacatureNumber: "asc" },
-    include: { _count: { select: { applications: true } } },
+    include: {
+      _count: { select: { applications: true } },
+      category: true,
+    },
   });
 
   return (
