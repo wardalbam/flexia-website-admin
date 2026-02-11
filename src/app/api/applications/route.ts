@@ -35,6 +35,8 @@ const applicationSchema = z.object({
   availability: z.array(z.string()).default([]),
   vacatureId: z.string().optional(),
   source: z.string().default("website"),
+  isGeneral: z.boolean().default(false),
+  motivation: z.string().optional(),
 });
 
 // GET /api/applications - Protected

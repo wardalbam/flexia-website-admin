@@ -11,18 +11,21 @@ import { X } from "lucide-react";
 export default async function ApplicationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; search?: string; page?: string; vacatureId?: string }>;
+  searchParams: Promise<{ status?: string; search?: string; page?: string; vacatureId?: string; type?: string }>;
 }) {
   const params = await searchParams;
   const status = params.status;
   const search = params.search;
   const vacatureId = params.vacatureId;
+  const type = params.type; // 'all', 'general', or 'specific'
   const page = parseInt(params.page || "1");
   const limit = 20;
 
   const where: Record<string, unknown> = {};
   if (status) where.status = status;
   if (vacatureId) where.vacatureId = vacatureId;
+  if (type === "general") where.isGeneral = true;
+  if (type === "specific") where.isGeneral = false;
   if (search) {
     where.OR = [
       { firstName: { contains: search, mode: "insensitive" } },
@@ -64,6 +67,7 @@ export default async function ApplicationsPage({
     if (status) params.set("status", status);
     if (search) params.set("search", search);
     if (vacatureId) params.set("vacatureId", vacatureId);
+    if (type) params.set("type", type);
     return params.toString();
   };
 
@@ -82,9 +86,19 @@ export default async function ApplicationsPage({
                 className="flex-1 px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium"
               />
               <select
+                name="type"
+                defaultValue={type || ""}
+                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
+              >
+                <option value="">Alle sollicitaties</option>
+                <option value="specific">Vacature-specifiek</option>
+                <option value="general">Algemeen</option>
+              </select>
+              <select
                 name="vacatureId"
                 defaultValue={vacatureId || ""}
                 className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
+                disabled={type === "general"}
               >
                 <option value="">Alle vacatures</option>
                 {allVacatures.map((v: { id: string; title: string; vacatureNumber: number }) => (
@@ -109,10 +123,18 @@ export default async function ApplicationsPage({
             </div>
 
             {/* Active Filter Pills */}
-            {(selectedVacature || status) && (
+            {(selectedVacature || status || type) && (
               <div className="flex flex-wrap items-center gap-2 pt-2">
+                {type && (
+                  <Link href={`/applications${status ? `?status=${status}` : ""}${vacatureId ? `${status ? "&" : "?"}vacatureId=${vacatureId}` : ""}`}>
+                    <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
+                      Type: {type === "general" ? "Algemeen" : "Vacature-specifiek"}
+                      <X className="h-4 w-4" />
+                    </Badge>
+                  </Link>
+                )}
                 {selectedVacature && (
-                  <Link href={`/applications${status ? `?status=${status}` : ""}`}>
+                  <Link href={`/applications${status ? `?status=${status}` : ""}${type ? `${status ? "&" : "?"}type=${type}` : ""}`}>
                     <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
                       Vacature: #{selectedVacature.vacatureNumber} - {selectedVacature.title}
                       <X className="h-4 w-4" />
@@ -120,7 +142,7 @@ export default async function ApplicationsPage({
                   </Link>
                 )}
                 {status && (
-                  <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}`}>
+                  <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}${type ? `${vacatureId ? "&" : "?"}type=${type}` : ""}`}>
                     <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
                       Status: {statusLabels[status] || status}
                       <X className="h-4 w-4" />
@@ -158,11 +180,17 @@ export default async function ApplicationsPage({
                       <p className="text-sm text-muted-foreground font-medium">
                         {app.email} &middot; {app.phone}
                       </p>
-                      {app.vacature && (
+                      {app.isGeneral ? (
+                        <p className="text-xs text-primary font-bold flex items-center gap-2">
+                          <Badge className="bg-purple-500/10 text-purple-700 border-purple-500/20 font-bold">
+                            Algemene sollicitatie
+                          </Badge>
+                        </p>
+                      ) : app.vacature ? (
                         <p className="text-xs text-muted-foreground font-semibold">
                           #{app.vacature.vacatureNumber} - {app.vacature.title}
                         </p>
-                      )}
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
                       <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>

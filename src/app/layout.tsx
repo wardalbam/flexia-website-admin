@@ -29,6 +29,7 @@ export default async function RootLayout({
   // components before accessing `.get()`.
   const reqHeaders = await headers();
   const hideLayout = reqHeaders.get("x-hide-layout") === "1";
+
   return (
     <html lang="nl">
       <body className={`${inter.className} antialiased`}>

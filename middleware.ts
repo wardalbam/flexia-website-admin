@@ -5,8 +5,10 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   // Public routes
   const isLogin = pathname === "/login";
+  const isSiteRoute = pathname.startsWith("/site");
   const isPublicRoute =
     isLogin ||
+    isSiteRoute ||
     pathname.startsWith("/api/auth") ||
     (pathname.startsWith("/api/vacatures") && req.method === "GET") ||
     (pathname === "/api/applications" && req.method === "POST");
@@ -21,8 +23,10 @@ export default auth((req) => {
   if (isPublicRoute) {
     // For the login page, set a lightweight header so server components can
     // detect the request and avoid rendering global navigation.
+    // For site routes, pass pathname for conditional layout rendering.
     const res = NextResponse.next();
     if (isLogin) res.headers.set("x-hide-layout", "1");
+    res.headers.set("x-pathname", pathname);
     return res;
   }
 
@@ -34,7 +38,10 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  // For authenticated routes, also pass pathname
+  const res = NextResponse.next();
+  res.headers.set("x-pathname", pathname);
+  return res;
 });
 
 export const config = {

@@ -3,6 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
+// Allowed origins for CORS (site app)
+const SITE_ORIGIN = process.env.SITE_ORIGIN || "http://localhost:3001";
+const DEV_ORIGINS = [
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
+];
+
+function isOriginAllowed(origin: string | null) {
+  if (!origin) return false;
+  if (process.env.NODE_ENV === "development") {
+    return DEV_ORIGINS.includes(origin) || origin === SITE_ORIGIN;
+  }
+  return origin === SITE_ORIGIN;
+}
+
 const vacatureSchema = z.object({
   title: z.string().min(1),
   subtitle: z.string().min(1),
@@ -23,8 +38,10 @@ const vacatureSchema = z.object({
   isActive: z.boolean(),
 });
 
-// GET /api/vacatures - Public endpoint
+// GET /api/vacatures - Public endpoint with CORS
 export async function GET(req: NextRequest) {
+  const origin = req.headers.get("origin");
+
   // Use req.nextUrl which is a safe URL object provided by Next.js
   const { searchParams } = req.nextUrl;
   const active = searchParams.get("active");
@@ -45,7 +62,16 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(vacatures);
+  const response = NextResponse.json(vacatures);
+
+  // Add CORS headers if origin is allowed
+  if (origin && isOriginAllowed(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  }
+
+  return response;
 }
 
 // POST /api/vacatures - Protected
@@ -86,4 +112,19 @@ export async function POST(req: NextRequest) {
     },
   });
   return NextResponse.json(vacature, { status: 201 });
+}
+
+// OPTIONS handler for CORS preflight
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+
+  if (!origin || !isOriginAllowed(origin)) {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  const response = new NextResponse(null, { status: 204 });
+  response.headers.set("Access-Control-Allow-Origin", origin);
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
 }
