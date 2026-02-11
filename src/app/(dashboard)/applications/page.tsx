@@ -46,11 +46,7 @@ export default async function ApplicationsPage({
     prisma.application.findMany({
       where,
       include: {
-        vacature: {
-          include: {
-            category: true,
-          },
-        },
+        vacature: true,
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
