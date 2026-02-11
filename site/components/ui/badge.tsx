@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Slot } from "radix-ui"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -31,7 +31,7 @@ type BadgeProps = React.ComponentProps<"span"> &
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant = "default", asChild = false, ...props }, ref) => {
-    const Comp = asChild ? (Slot.Root as any) : "span"
+    const Comp = asChild ? (Slot as any) : "span"
 
     return (
       <Comp
