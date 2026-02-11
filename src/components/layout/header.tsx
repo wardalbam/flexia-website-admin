@@ -1,10 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { Menu } from "lucide-react";
-import Link from "next/link";
-import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 export function Header({ title }: { title?: string }) {
@@ -26,51 +22,34 @@ export function Header({ title }: { title?: string }) {
   })();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/95 backdrop-blur px-6">
-      <div className="flex items-center gap-4">
-        {/* Mobile menu trigger */}
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <button aria-label="Open menu" className="inline-flex items-center justify-center p-2 rounded-md hover:bg-muted">
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-2 p-4">
-                <Link href="/" className="px-3 py-2 rounded hover:bg-muted">Dashboard</Link>
-                <Link href="/vacatures" className="px-3 py-2 rounded hover:bg-muted">Vacatures</Link>
-                <Link href="/applications" className="px-3 py-2 rounded hover:bg-muted">Sollicitaties</Link>
-                <Link href="/settings" className="px-3 py-2 rounded hover:bg-muted">Instellingen</Link>
-                <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-left px-3 py-2 rounded hover:bg-muted">Uitloggen</button>
-              </nav>
-            </SheetContent>
-          </Sheet>
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center justify-between px-4 md:px-6">
+        {/* Mobile: Logo icon + title */}
+        <div className="flex items-center gap-3 md:hidden">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-black text-sm">F</span>
+          </div>
+          <div>
+            <h1 className="text-base font-bold tracking-tight">{inferredTitle}</h1>
+          </div>
         </div>
 
-        {inferredTitle ? (
-          <h1 className="text-lg font-semibold">{inferredTitle}</h1>
-        ) : null}
-      </div>
+        {/* Desktop: Page title only */}
+        <div className="hidden md:block">
+          <h1 className="text-xl font-bold tracking-tight">{inferredTitle}</h1>
+        </div>
 
-      <div className="hidden md:flex items-center gap-3">
-        <div className="text-right">
-          <p className="text-sm font-medium">{session?.user?.name || "Admin"}</p>
-          <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
-        </div>
-        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-          <span className="text-primary text-sm font-bold">
-            {(session?.user?.name || "A")[0].toUpperCase()}
-          </span>
-        </div>
-      </div>
-      {/* On mobile show the avatar/name to the right of the title */}
-      <div className="md:hidden flex items-center gap-3">
-        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-          <span className="text-primary text-sm font-bold">{(session?.user?.name || "A")[0].toUpperCase()}</span>
+        {/* User profile (both mobile and desktop) */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:block text-right">
+            <p className="text-sm font-semibold">{session?.user?.name || "Admin"}</p>
+            <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
+          </div>
+          <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20">
+            <span className="text-primary text-sm font-black">
+              {(session?.user?.name || "A")[0].toUpperCase()}
+            </span>
+          </div>
         </div>
       </div>
     </header>

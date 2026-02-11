@@ -4,6 +4,8 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 import { headers } from "next/headers";
 
@@ -32,7 +34,16 @@ export default function RootLayout({
         <SessionProvider>
           {!hideLayout && <Sidebar />}
           {!hideLayout && <Header />}
-          <div role="main" className={`${hideLayout ? "" : "md:ml-64"} mt-2`}>{children}</div>
+          <div
+            role="main"
+            className={cn(
+              "min-h-screen mt-2",
+              hideLayout ? "" : "md:ml-64 pb-20 md:pb-4"
+            )}
+          >
+            {children}
+          </div>
+          {!hideLayout && <MobileBottomNav />}
           <Toaster />
         </SessionProvider>
       </body>

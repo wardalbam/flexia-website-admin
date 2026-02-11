@@ -23,11 +23,11 @@ export function Sidebar() {
     <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-black text-sm">F</span>
+        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-sm">
+            <span className="text-primary-foreground font-black text-lg">F</span>
           </div>
-          <span className="font-bold text-lg">Flexia Admin</span>
+          <span className="font-black text-xl tracking-tight">Flexia</span>
         </div>
 
         {/* Navigation */}
@@ -43,13 +43,13 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all",
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );
@@ -60,9 +60,9 @@ export function Sidebar() {
         <div className="border-t border-border p-4">
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive hover:scale-[1.01]"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
             Uitloggen
           </button>
         </div>

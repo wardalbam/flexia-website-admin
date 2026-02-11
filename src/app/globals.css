@@ -123,3 +123,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Mobile-first spacing utilities */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .mobile-nav-height {
+    height: 64px;
+  }
+}

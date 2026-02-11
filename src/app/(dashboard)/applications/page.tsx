@@ -1,28 +1,11 @@
 // Header is now global in RootLayout
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { statusLabels, getStatusBadgeClasses } from "@/lib/status-colors";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-const statusLabels: Record<string, string> = {
-  NEW: "Nieuw",
-  REVIEWED: "Bekeken",
-  CONTACTED: "Gecontacteerd",
-  INTERVIEW_SCHEDULED: "Gesprek Gepland",
-  HIRED: "Aangenomen",
-  REJECTED: "Afgewezen",
-  WITHDRAWN: "Teruggetrokken",
-};
-
-const statusColors: Record<string, string> = {
-  NEW: "bg-blue-100 text-blue-800",
-  REVIEWED: "bg-yellow-100 text-yellow-800",
-  CONTACTED: "bg-purple-100 text-purple-800",
-  INTERVIEW_SCHEDULED: "bg-orange-100 text-orange-800",
-  HIRED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  WITHDRAWN: "bg-gray-100 text-gray-800",
-};
 
 export default async function ApplicationsPage({
   searchParams,
@@ -60,33 +43,30 @@ export default async function ApplicationsPage({
 
   return (
     <>
-      <main className="p-4 space-y-6">
-        {/* Filters */}
-        <div className="flex gap-3 flex-wrap">
-          <form className="flex gap-3 flex-wrap" action="/applications" method="GET">
+      <main className="p-4 md:p-6 space-y-6">
+        {/* Modern Filter Section */}
+        <div className="bg-card rounded-xl border border-border shadow-sm p-4 md:p-6">
+          <form className="flex flex-col md:flex-row gap-3" action="/applications" method="GET">
             <input
               type="text"
               name="search"
               placeholder="Zoek op naam of email..."
               defaultValue={search || ""}
-              className="px-3 py-2 border border-input rounded-lg text-sm bg-background"
+              className="flex-1 px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium"
             />
             <select
               name="status"
               defaultValue={status || ""}
-              className="px-3 py-2 border border-input rounded-lg text-sm bg-background"
+              className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
             >
               <option value="">Alle statussen</option>
               {Object.entries(statusLabels).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium"
-            >
+            <Button type="submit" className="font-semibold">
               Filteren
-            </button>
+            </Button>
           </form>
         </div>
 
@@ -107,26 +87,26 @@ export default async function ApplicationsPage({
           ) : (
           applications.map((app: any) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div className="space-y-1">
-                      <p className="font-medium">
+                <Card className="hover:shadow-lg transition-all hover:scale-[1.01] group">
+                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3">
+                    <div className="space-y-1 flex-1">
+                      <p className="font-bold text-base tracking-tight group-hover:text-primary transition-colors">
                         {app.firstName} {app.lastName}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground font-medium">
                         {app.email} &middot; {app.phone}
                       </p>
                       {app.vacature && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground font-semibold">
                           {app.vacature.title}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={statusColors[app.status] || ""} variant="secondary">
+                    <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
+                      <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
                         {statusLabels[app.status] || app.status}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
                         {new Date(app.createdAt).toLocaleDateString("nl-NL")}
                       </span>
                     </div>

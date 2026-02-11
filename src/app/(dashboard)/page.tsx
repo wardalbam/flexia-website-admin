@@ -2,28 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
+import { statusLabels, getStatusBadgeClasses } from "@/lib/status-colors";
 import { Briefcase, Users, UserPlus, CalendarDays } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-const statusColors: Record<string, string> = {
-  NEW: "bg-blue-100 text-blue-800",
-  REVIEWED: "bg-yellow-100 text-yellow-800",
-  CONTACTED: "bg-purple-100 text-purple-800",
-  INTERVIEW_SCHEDULED: "bg-orange-100 text-orange-800",
-  HIRED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  WITHDRAWN: "bg-gray-100 text-gray-800",
-};
-
-const statusLabels: Record<string, string> = {
-  NEW: "Nieuw",
-  REVIEWED: "Beoordeeld",
-  CONTACTED: "Gecontacteerd",
-  INTERVIEW_SCHEDULED: "Gesprek gepland",
-  HIRED: "Aangenomen",
-  REJECTED: "Afgewezen",
-  WITHDRAWN: "Teruggetrokken",
-};
 
 export default async function DashboardPage() {
   const [
@@ -70,18 +52,24 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {stats.map((stat) => (
-                <Card key={stat.label}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">{stat.label}</p>
-                        <p className="text-3xl font-bold mt-1">{stat.value}</p>
+                <Card key={stat.label} className="overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02] group">
+                  <CardContent className="p-6 relative">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={cn("p-2 rounded-lg bg-gradient-to-br",
+                          stat.color === "text-primary" ? "from-primary/20 to-primary/10" :
+                          stat.color === "text-blue-600" ? "from-blue-500/20 to-blue-500/10" :
+                          stat.color === "text-green-600" ? "from-green-500/20 to-green-500/10" :
+                          "from-purple-500/20 to-purple-500/10"
+                        )}>
+                          <stat.icon className={cn("h-5 w-5", stat.color)} />
+                        </div>
                       </div>
-                      <div className={`${stat.color}`}>
-                        <stat.icon className="h-8 w-8 opacity-80" />
-                      </div>
+                      <p className="text-sm font-semibold text-muted-foreground">{stat.label}</p>
+                      <p className="text-4xl font-black mt-2 tracking-tight">{stat.value}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -121,7 +109,7 @@ export default async function DashboardPage() {
                             <p className="text-xs text-muted-foreground">{app.selectedVacatures.join(", ")}</p>
                             <p className="text-xs text-muted-foreground">{new Date(app.createdAt).toLocaleDateString("nl-NL")}</p>
                           </div>
-                          <Badge variant="secondary" className={statusColors[app.status]}>
+                          <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
                             {statusLabels[app.status] || app.status}
                           </Badge>
                         </div>
