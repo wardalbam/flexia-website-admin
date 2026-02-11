@@ -64,7 +64,7 @@ export function VacatureDetailView({
   const daysOnline = getDaysOnline(selectedVacature.publishedAt);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] overflow-hidden">
       {/* Sidebar with Vacature List - Desktop Only */}
       <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
         <div className="p-4 border-b border-border sticky top-0 bg-card z-10">

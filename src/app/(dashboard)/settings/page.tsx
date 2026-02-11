@@ -7,8 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { Layers, UserCog, ChevronRight } from "lucide-react";
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,6 +62,39 @@ export default function SettingsPage() {
     <>
       <main className="p-4 space-y-6 max-w-2xl">
         {/* header shows the page title */}
+
+        {/* Admin Quick Links - Mobile Only */}
+        {isAdmin && (
+          <Card className="md:hidden">
+            <CardHeader>
+              <CardTitle>Beheer</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Link href="/settings/categories">
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Layers className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="font-bold">Categorieën</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </Link>
+              <Link href="/settings/users">
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <UserCog className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="font-bold">Gebruikers</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
