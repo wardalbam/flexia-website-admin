@@ -1,4 +1,11 @@
 import NextAuth from "next-auth";
+// If NEXTAUTH_URL isn't provided in the environment (e.g. on Vercel),
+// try to infer it from VERCEL_URL (which Vercel sets to the deployment hostname)
+// and ensure it includes a protocol. This prevents `new URL(undefined)`
+// runtime errors inside Auth.js when NEXTAUTH_URL is missing.
+if (!process.env.NEXTAUTH_URL && process.env.VERCEL_URL) {
+  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
