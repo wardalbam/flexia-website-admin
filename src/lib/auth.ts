@@ -45,14 +45,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role: string }).role;
+        // user may be an AdapterUser or our custom User type — cast to any to avoid TypeScript mismatch during build
+        token.role = (user as any).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub!;
-        (session.user as { role: string }).role = token.role as string;
+        // session.user typing doesn't include our custom `role` property by default.
+        // Cast to any to assign the role safely during runtime.
+        (session.user as any).role = token.role as string;
       }
       return session;
     },
