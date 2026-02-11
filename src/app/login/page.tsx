@@ -61,7 +61,6 @@ function LoginForm() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="admin@flexiajobs.nl"
                 required
               />
             </div>
