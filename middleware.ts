@@ -3,15 +3,28 @@ import { NextResponse } from "next/server";
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-
   // Public routes
+  const isLogin = pathname === "/login";
   const isPublicRoute =
-    pathname === "/login" ||
+    isLogin ||
     pathname.startsWith("/api/auth") ||
     (pathname.startsWith("/api/vacatures") && req.method === "GET") ||
     (pathname === "/api/applications" && req.method === "POST");
 
-  if (isPublicRoute) return NextResponse.next();
+  // If an authenticated user tries to visit /login, send them to the app root
+  if (isLogin && req.auth) {
+    const dest = req.nextUrl.clone();
+    dest.pathname = "/";
+    return NextResponse.redirect(dest);
+  }
+
+  if (isPublicRoute) {
+    // For the login page, set a lightweight header so server components can
+    // detect the request and avoid rendering global navigation.
+    const res = NextResponse.next();
+    if (isLogin) res.headers.set("x-hide-layout", "1");
+    return res;
+  }
 
   if (!req.auth) {
     // Use req.nextUrl (a URL object) as the base to avoid Invalid URL errors in some runtimes

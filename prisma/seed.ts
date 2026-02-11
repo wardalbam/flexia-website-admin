@@ -9,7 +9,26 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Create admin user
-  const hashedPassword = await bcrypt.hash("FlexiaAdmin2024!", 12);
+  // Use an env var to provide the admin password for seeding so secrets are
+  // not checked into source. If not provided, generate a secure random
+  // password and print it so the operator can save it locally.
+  const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const generatedPassword = !seedAdminPassword
+    ? ((): string => {
+        // Use crypto to generate a short, URL-safe random string
+        try {
+          // 12 bytes -> 16-char base64url
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { randomBytes } = require("crypto");
+          return randomBytes(12).toString("base64url");
+        } catch {
+          return "change-me-please";
+        }
+      })()
+    : undefined;
+
+  const adminPassword = seedAdminPassword ?? generatedPassword!;
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
   await prisma.user.upsert({
     where: { email: "admin@flexiajobs.nl" },
     update: {},
@@ -21,6 +40,9 @@ async function main() {
     },
   });
   console.log("Admin user created: admin@flexiajobs.nl");
+  if (generatedPassword) {
+    console.log("Seed created a random admin password — please save it:", generatedPassword);
+  }
 
   // Seed all vacatures
   const vacatures = [

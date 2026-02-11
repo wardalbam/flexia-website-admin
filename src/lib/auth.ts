@@ -1,9 +1,18 @@
 import NextAuth from "next-auth";
-// If NEXTAUTH_URL isn't provided in the environment (e.g. on Vercel),
-// try to infer it from VERCEL_URL (which Vercel sets to the deployment hostname)
-// and ensure it includes a protocol. This prevents `new URL(undefined)`
-// runtime errors inside Auth.js when NEXTAUTH_URL is missing.
-if (!process.env.NEXTAUTH_URL && process.env.VERCEL_URL) {
+// Normalize NEXTAUTH_URL to always include a protocol. When people add
+// the env var in Vercel they sometimes set it as `admin.flexiajobs.nl`.
+// That causes `new URL(...)` errors in some runtime code. Fix the value
+// here so the rest of the app can safely rely on a valid URL string.
+const _rawNextAuthUrl = process.env.NEXTAUTH_URL?.trim();
+if (_rawNextAuthUrl) {
+  // If NEXTAUTH_URL exists but doesn't start with http(s)://, assume https
+  if (!/^https?:\/\//i.test(_rawNextAuthUrl)) {
+    process.env.NEXTAUTH_URL = `https://${_rawNextAuthUrl}`;
+  } else {
+    process.env.NEXTAUTH_URL = _rawNextAuthUrl;
+  }
+} else if (process.env.VERCEL_URL) {
+  // If NEXTAUTH_URL isn't set, derive from VERCEL_URL (this env is set by Vercel)
   process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
 }
 import Credentials from "next-auth/providers/credentials";

@@ -3,6 +3,25 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
+// Allowed frontend origins. In production you should set FRONTEND_ORIGIN to
+// https://flexiajobs.nl (or whatever your public site is). During
+// development we accept localhost origins so local frontends can post.
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://flexiajobs.nl";
+const DEV_LOCAL_ORIGINS = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+function isOriginAllowed(origin: string | null) {
+  if (!origin) return false;
+  if (process.env.NODE_ENV === "development") {
+    return DEV_LOCAL_ORIGINS.includes(origin) || origin === FRONTEND_ORIGIN;
+  }
+  return origin === FRONTEND_ORIGIN;
+}
+
 const applicationSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -67,6 +86,17 @@ export async function GET(req: NextRequest) {
 
 // POST /api/applications - Public (for frontend submissions)
 export async function POST(req: NextRequest) {
+  // Basic origin check: allow only expected frontend origins to POST here.
+  const origin = req.headers.get("origin");
+  if (!isOriginAllowed(origin)) {
+    return new NextResponse(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Set CORS header to allow the calling origin when allowed
+  const corsOrigin = origin ?? FRONTEND_ORIGIN;
   const body = await req.json();
   const parsed = applicationSchema.safeParse(body);
 
@@ -84,9 +114,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const application = await prisma.application.create({
-    data: parsed.data,
-  });
+  const application = await prisma.application.create({ data: parsed.data });
 
-  return NextResponse.json(application, { status: 201 });
+  const res = NextResponse.json(application, { status: 201 });
+  res.headers.set("Access-Control-Allow-Origin", corsOrigin);
+  return res;
+}
+
+// Support CORS preflight from the frontend
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  if (!isOriginAllowed(origin)) {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  const res = new NextResponse(null, { status: 204 });
+  res.headers.set("Access-Control-Allow-Origin", origin ?? FRONTEND_ORIGIN);
+  res.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return res;
 }
