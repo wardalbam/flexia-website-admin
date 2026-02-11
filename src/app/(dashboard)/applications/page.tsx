@@ -47,12 +47,8 @@ export default async function ApplicationsPage({
       where,
       include: {
         vacature: {
-          select: {
-            title: true,
-            category: {
-              select: { name: true },
-            },
-            vacatureNumber: true,
+          include: {
+            category: true,
           },
         },
       },
