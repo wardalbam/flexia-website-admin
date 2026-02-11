@@ -37,8 +37,11 @@ export default function VacaturesPage() {
   useEffect(() => {
     const fetchVacatures = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-        const res = await fetch(`${apiUrl}/api/vacatures?active=true`);
+  // Use a relative API URL in production when NEXT_PUBLIC_API_URL is not set
+  // Falling back to an empty string makes the request go to the same origin
+  // (e.g. https://yourdomain.com/api/...) instead of localhost which fails on Vercel.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${apiUrl}/api/vacatures?active=true`);
         if (res.ok) {
           const data = await res.json();
           setVacatures(data);
