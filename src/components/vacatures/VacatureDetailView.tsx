@@ -1,13 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { getCategoryColor } from "@/lib/status-colors";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Edit,
+  Trash2,
   MapPin,
   Briefcase,
   Euro,
@@ -37,6 +48,8 @@ export function VacatureDetailView({
   const router = useRouter();
   const [selectedVacature, setSelectedVacature] = useState(initialVacature);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleVacatureClick = async (vacatureId: string) => {
     if (vacatureId === selectedVacature.id) return;
@@ -60,12 +73,32 @@ export function VacatureDetailView({
     }
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/vacatures/${selectedVacature.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("Vacature verwijderd");
+        router.push("/vacatures");
+        router.refresh();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Kon vacature niet verwijderen");
+      }
+    } catch {
+      toast.error("Er ging iets mis bij het verwijderen");
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  };
+
   const categoryColor = getCategoryColor(selectedVacature.category?.name);
   const daysOnline = getDaysOnline(selectedVacature.publishedAt);
 
   return (
-    // Make layout flow naturally (no fixed outer height) so mobile scroll is the page's
-    // responsibility and we avoid nested scroll gaps. Stack on mobile, row on large.
     <div className="flex flex-col lg:flex-row">
       {/* Sidebar with Vacature List - Desktop Only */}
       <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
@@ -165,6 +198,11 @@ export function VacatureDetailView({
                   Inactief
                 </Badge>
               )}
+              {selectedVacature.archived && (
+                <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
+                  Gearchiveerd
+                </Badge>
+              )}
               <span className="text-xs text-muted-foreground ml-auto">
                 #{selectedVacature.vacatureNumber}
               </span>
@@ -217,14 +255,23 @@ export function VacatureDetailView({
             </div>
           </div>
 
-          {/* Edit Button */}
-          <div>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
             <a href={`/vacatures/${selectedVacature.id}/edit`}>
               <Button size="lg" className="font-bold gap-2">
                 <Edit className="h-5 w-5" />
                 Bewerken
               </Button>
             </a>
+            <Button
+              size="lg"
+              variant="destructive"
+              className="font-bold gap-2"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="h-5 w-5" />
+              Verwijderen
+            </Button>
           </div>
 
           {/* Dienstverband */}
@@ -338,6 +385,34 @@ export function VacatureDetailView({
           </div>
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vacature verwijderen</DialogTitle>
+            <DialogDescription>
+              Weet je zeker dat je <strong>&ldquo;{selectedVacature.title}&rdquo;</strong> wilt
+              verwijderen? Dit kan niet ongedaan worden gemaakt. Alle gekoppelde
+              sollicitaties verliezen hun vacature-referentie.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" disabled={deleting}>
+                Annuleren
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Verwijderen..." : "Ja, verwijderen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
