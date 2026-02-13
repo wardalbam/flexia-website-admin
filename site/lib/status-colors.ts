@@ -20,17 +20,17 @@ export const statusColorClasses: Record<string, string> = {
 
 // Category colors
 const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
-  "Horeca": {
+  "F&B": {
     bg: "bg-orange-500/10",
     text: "text-orange-700 dark:text-orange-300",
     border: "border-orange-500/20"
   },
-  "Logistiek": {
+  "Afwas": {
     bg: "bg-blue-500/10",
     text: "text-blue-700 dark:text-blue-300",
     border: "border-blue-500/20"
   },
-  "Productie": {
+  "Bediening": {
     bg: "bg-purple-500/10",
     text: "text-purple-700 dark:text-purple-300",
     border: "border-purple-500/20"
@@ -40,7 +40,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     text: "text-amber-700 dark:text-amber-300",
     border: "border-amber-500/20"
   },
-  "Zorg": {
+  "Catering": {
     bg: "bg-pink-500/10",
     text: "text-pink-700 dark:text-pink-300",
     border: "border-pink-500/20"
