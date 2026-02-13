@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import useSWR, { mutate as globalMutate } from "swr";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,30 +47,46 @@ export function VacatureDetailView({
   allVacatures: Vacature[];
 }) {
   const router = useRouter();
-  const [selectedVacature, setSelectedVacature] = useState(initialVacature);
+  // Track the currently selected vacancy id. SWR will provide cached
+  // data for the selected id when available.
+  const [selectedId, setSelectedId] = useState<string>(initialVacature.id);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+  // Use SWR to fetch and cache vacancy details across the admin session.
+  const { data: selectedVacature, error } = useSWR(
+    selectedId ? `/api/vacatures/${selectedId}` : null,
+    fetcher,
+    {
+      fallbackData: selectedId === initialVacature.id ? initialVacature : undefined,
+      revalidateOnFocus: false,
+    }
+  );
 
   const handleVacatureClick = async (vacatureId: string) => {
-    if (vacatureId === selectedVacature.id) return;
+    if (vacatureId === selectedId) return;
 
     setIsLoading(true);
-
     // Update URL without full page reload
     router.push(`/vacatures/${vacatureId}`, { scroll: false });
 
+    // Let SWR handle cache: set the selected id which will trigger SWR to
+    // return cached data immediately if present, or fetch if not.
+    setSelectedId(vacatureId);
+
+    // No need to await here; let SWR update `selectedVacature` asynchronously.
+    setIsLoading(false);
+  };
+
+  const prefetchVacature = async (vacatureId: string) => {
+    // Use SWR's global mutate to prefetch and cache the vacancy detail.
+    const key = `/api/vacatures/${vacatureId}`;
     try {
-      // Fetch the vacancy details
-      const response = await fetch(`/api/vacatures/${vacatureId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedVacature(data);
-      }
-    } catch (error) {
-      console.error("Failed to load vacancy:", error);
-    } finally {
-      setIsLoading(false);
+      await globalMutate(key, fetcher(key), { revalidate: false });
+    } catch (e) {
+      // ignore prefetch errors
     }
   };
 
@@ -101,7 +118,7 @@ export function VacatureDetailView({
   return (
     <div className="flex flex-col lg:flex-row">
       {/* Sidebar with Vacature List - Desktop Only */}
-      <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
+  <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
         <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
           <a href="/vacatures">
             <Button variant="ghost" size="sm" className="gap-2 font-bold">
@@ -118,6 +135,8 @@ export function VacatureDetailView({
               <button
                 key={v.id}
                 onClick={() => handleVacatureClick(v.id)}
+                onMouseEnter={() => prefetchVacature(v.id)}
+                onFocus={() => prefetchVacature(v.id)}
                 className={cn(
                   "w-full text-left p-3 rounded-lg border transition-all cursor-pointer",
                   isActive
@@ -126,7 +145,7 @@ export function VacatureDetailView({
                 )}
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h4 className="font-bold text-sm line-clamp-2 flex-1">
+                  <h4 className="font-bold text-sm line-clamp-2 flex-1 min-w-0">
                     {v.title}
                   </h4>
                   {!v.isActive && (
