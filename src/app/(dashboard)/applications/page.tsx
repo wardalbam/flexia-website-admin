@@ -83,12 +83,12 @@ export default async function ApplicationsPage({
                 name="search"
                 placeholder="Zoek op naam of email..."
                 defaultValue={search || ""}
-                className="flex-1 px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                className="flex-1 min-w-0 px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium"
               />
               <select
                 name="type"
                 defaultValue={type || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
+                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
               >
                 <option value="">Alle sollicitaties</option>
                 <option value="specific">Vacature-specifiek</option>
@@ -97,7 +97,7 @@ export default async function ApplicationsPage({
               <select
                 name="vacatureId"
                 defaultValue={vacatureId || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
+                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
                 disabled={type === "general"}
               >
                 <option value="">Alle vacatures</option>
@@ -110,7 +110,7 @@ export default async function ApplicationsPage({
               <select
                 name="status"
                 defaultValue={status || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-[200px]"
+                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
               >
                 <option value="">Alle statussen</option>
                 {Object.entries(statusLabels).map(([key, label]) => (
@@ -127,7 +127,7 @@ export default async function ApplicationsPage({
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 {type && (
                   <Link href={`/applications${status ? `?status=${status}` : ""}${vacatureId ? `${status ? "&" : "?"}vacatureId=${vacatureId}` : ""}`}>
-                    <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
+                    <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
                       Type: {type === "general" ? "Algemeen" : "Vacature-specifiek"}
                       <X className="h-4 w-4" />
                     </Badge>
@@ -135,7 +135,7 @@ export default async function ApplicationsPage({
                 )}
                 {selectedVacature && (
                   <Link href={`/applications${status ? `?status=${status}` : ""}${type ? `${status ? "&" : "?"}type=${type}` : ""}`}>
-                    <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
+                    <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
                       Vacature: #{selectedVacature.vacatureNumber} - {selectedVacature.title}
                       <X className="h-4 w-4" />
                     </Badge>
@@ -143,7 +143,7 @@ export default async function ApplicationsPage({
                 )}
                 {status && (
                   <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}${type ? `${vacatureId ? "&" : "?"}type=${type}` : ""}`}>
-                    <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
+                    <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
                       Status: {statusLabels[status] || status}
                       <X className="h-4 w-4" />
                     </Badge>
@@ -172,8 +172,8 @@ export default async function ApplicationsPage({
           applications.map((app: any) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
                 <Card className="hover:shadow-lg transition-all hover:scale-[1.01] group">
-                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3">
-                    <div className="space-y-1 flex-1">
+                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
+                    <div className="space-y-1 flex-1 min-w-0">
                       <p className="font-bold text-base tracking-tight">
                         {app.firstName} {app.lastName}
                       </p>
@@ -192,7 +192,7 @@ export default async function ApplicationsPage({
                         </p>
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
+                    <div className="flex items-center gap-3 flex-wrap md:flex-nowrap min-w-0">
                       <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
                         {statusLabels[app.status] || app.status}
                       </Badge>
