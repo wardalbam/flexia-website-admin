@@ -27,7 +27,7 @@ export default async function HomePage() {
   return (
     <>
       {/* ========== HERO — compact, bold, accent with layered artful background ========== */}
-      <section className="relative py-20 md:py-28 flex items-center bg-background overflow-hidden">
+      <section className="relative py-20 md:py-28 flex items-center bg-background overflow-hidden" data-header-theme="dark">
           {/* Decorative layered background: subtle image + SVG blobs + gradient overlay */}
           <div
             aria-hidden

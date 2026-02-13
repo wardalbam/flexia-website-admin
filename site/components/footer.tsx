@@ -35,6 +35,18 @@ export function Footer() {
                 Vacatures
               </Link>
               <Link
+                href="/ik-zoek-werk"
+                className="text-sm text-white/50 hover:text-white/80 transition-colors duration-300"
+              >
+                Ik zoek werk
+              </Link>
+              <Link
+                href="/ik-zoek-personeel"
+                className="text-sm text-white/50 hover:text-white/80 transition-colors duration-300"
+              >
+                Ik zoek personeel
+              </Link>
+              <Link
                 href="/solliciteer"
                 className="text-sm text-white/50 hover:text-white/80 transition-colors duration-300"
               >

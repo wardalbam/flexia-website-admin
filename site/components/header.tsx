@@ -9,12 +9,15 @@ import { cn } from "../lib/utils";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/vacatures", label: "Vacatures" },
+  { href: "/ik-zoek-werk", label: "Ik zoek werk" },
+  { href: "/ik-zoek-personeel", label: "Ik zoek personeel" },
   { href: "/solliciteer", label: "Solliciteer" },
 ];
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [heroDark, setHeroDark] = useState(true);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -27,6 +30,33 @@ export function Header() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Detect whether the header overlaps a dark section
+  useEffect(() => {
+    const darkSections = document.querySelectorAll(
+      '.surface-dark, .surface-darker, [data-header-theme="dark"]'
+    );
+
+    if (darkSections.length === 0) {
+      setHeroDark(false);
+      return;
+    }
+
+    // Observe only sections near the top of the viewport (header area ~5%)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const anyDark = entries.some((entry) => entry.isIntersecting);
+        setHeroDark(anyDark);
+      },
+      { rootMargin: "0px 0px -90% 0px" }
+    );
+
+    darkSections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  // When not scrolled, use light text only if hero is dark
+  const lightText = !scrolled && heroDark;
+
   return (
     <header
       className={cn(
@@ -34,7 +64,9 @@ export function Header() {
         scrolled
           ? "glass shadow-layered py-3"
           : mobileOpen
-            ? "glass-dark py-3"
+            ? heroDark
+              ? "glass-dark py-3"
+              : "glass py-3"
             : "bg-transparent py-5"
       )}
     >
@@ -45,7 +77,7 @@ export function Header() {
             <span
               className={cn(
                 "text-[1.35rem] font-bold tracking-tight transition-colors duration-500 group-hover:opacity-80",
-                scrolled ? "text-foreground" : "text-white"
+                lightText ? "text-white" : "text-foreground"
               )}
             >
               flexia
@@ -63,13 +95,13 @@ export function Header() {
                 href={link.href}
                 className={cn(
                   "text-[0.8125rem] font-medium tracking-wide uppercase animated-underline transition-colors duration-500",
-                  scrolled
+                  lightText
                     ? pathname === link.href
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                    : pathname === link.href
                       ? "text-white"
                       : "text-white/60 hover:text-white"
+                    : pathname === link.href
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {link.label}
@@ -79,9 +111,9 @@ export function Header() {
               href="/solliciteer"
               className={cn(
                 "ml-2 inline-flex items-center justify-center rounded-full px-7 py-2.5 text-[0.8125rem] font-semibold tracking-wide transition-all duration-500 hover:scale-[1.02]",
-                scrolled
-                  ? "bg-foreground text-background hover:opacity-90"
-                  : "bg-white text-foreground hover:bg-white/90"
+                lightText
+                  ? "bg-white text-foreground hover:bg-white/90"
+                  : "bg-foreground text-background hover:opacity-90"
               )}
             >
               Solliciteer Nu
@@ -93,7 +125,7 @@ export function Header() {
             onClick={() => setMobileOpen(!mobileOpen)}
             className={cn(
               "md:hidden p-2 -mr-2 transition-colors duration-500",
-              scrolled ? "text-foreground" : "text-white"
+              lightText ? "text-white" : "text-foreground"
             )}
             aria-label="Toggle menu"
           >
@@ -112,7 +144,7 @@ export function Header() {
         <div
           className={cn(
             "px-6 pt-6 pb-8 mt-4 border-t",
-            scrolled ? "border-border/50" : "border-white/10"
+            lightText ? "border-white/10" : "border-border/50"
           )}
         >
           <nav className="flex flex-col gap-1">
@@ -122,18 +154,18 @@ export function Header() {
                 href={link.href}
                 className={cn(
                   "block py-3.5 text-[0.9375rem] font-medium tracking-wide transition-colors duration-300 border-b last:border-b-0",
-                  scrolled
+                  lightText
                     ? cn(
-                        "border-border/30",
-                        pathname === link.href
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )
-                    : cn(
                         "border-white/10",
                         pathname === link.href
                           ? "text-white"
                           : "text-white/60 hover:text-white"
+                      )
+                    : cn(
+                        "border-border/30",
+                        pathname === link.href
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                       )
                 )}
               >
@@ -146,9 +178,9 @@ export function Header() {
               href="/solliciteer"
               className={cn(
                 "block w-full text-center rounded-full py-3.5 text-[0.875rem] font-semibold tracking-wide transition-all duration-500",
-                scrolled
-                  ? "bg-foreground text-background hover:opacity-90"
-                  : "bg-white text-foreground hover:bg-white/90"
+                lightText
+                  ? "bg-white text-foreground hover:bg-white/90"
+                  : "bg-foreground text-background hover:opacity-90"
               )}
             >
               Solliciteer Nu

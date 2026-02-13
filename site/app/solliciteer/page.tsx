@@ -7,30 +7,95 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../../components/ui/select";
 import { AnimatedSection } from "../../components/animated-section";
-import { CheckCircle2, ArrowLeft, Calendar, CreditCard, PartyPopper, HeartHandshake, Send, Clock } from "lucide-react";
+import {
+  CheckCircle2,
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  PartyPopper,
+  HeartHandshake,
+  Send,
+  Clock,
+} from "lucide-react";
+
+const AVAILABILITY_OPTIONS = [
+  { value: "maandag", label: "Maandag" },
+  { value: "dinsdag", label: "Dinsdag" },
+  { value: "woensdag", label: "Woensdag" },
+  { value: "donderdag", label: "Donderdag" },
+  { value: "vrijdag", label: "Vrijdag" },
+  { value: "zaterdag", label: "Zaterdag" },
+  { value: "zondag", label: "Zondag" },
+];
+
+const CATEGORY_OPTIONS = [
+  { value: "bediening", label: "Bediening" },
+  { value: "catering-events", label: "Catering & Events" },
+  { value: "keukenhulp", label: "Keukenhulp" },
+  { value: "spoelkeuken", label: "Spoelkeuken" },
+  { value: "anders", label: "Anders / Geen voorkeur" },
+];
 
 export default function GeneralApplicationPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [city, setCity] = useState("");
+  const [gender, setGender] = useState("");
+  const [experience, setExperience] = useState("");
+  const [availability, setAvailability] = useState<string[]>([]);
+  const [selectedVacatures, setSelectedVacatures] = useState<string[]>([]);
   const [motivation, setMotivation] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
+  const toggleAvailability = (day: string) => {
+    setAvailability((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
+  const toggleCategory = (cat: string) => {
+    setSelectedVacatures((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ??
+        (typeof window !== "undefined" ? window.location.origin : "");
       const res = await fetch(`${apiUrl}/api/applications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName, lastName, email, phone, motivation,
-          isGeneral: true, source: "website",
+          firstName,
+          lastName,
+          email,
+          phone,
+          birthDate: birthDate || undefined,
+          city: city || undefined,
+          gender: gender || undefined,
+          experience: experience || undefined,
+          availability,
+          selectedVacatures,
+          motivation: motivation || undefined,
+          isGeneral: true,
+          source: "website",
         }),
       });
       if (res.status === 201) setSuccess(true);
@@ -54,14 +119,22 @@ export default function GeneralApplicationPage() {
             <div className="space-y-3">
               <h2 className="text-3xl font-bold tracking-tight">Bedankt!</h2>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                We hebben je algemene sollicitatie ontvangen en nemen zo snel mogelijk contact met je op.
+                We hebben je sollicitatie ontvangen en nemen zo snel mogelijk
+                contact met je op.
               </p>
             </div>
             <div className="flex gap-3 justify-center pt-2">
-              <Button asChild className="bg-foreground text-background hover:bg-foreground/90 rounded-full font-semibold px-6 h-11">
+              <Button
+                asChild
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-full font-semibold px-6 h-11"
+              >
                 <Link href="/vacatures">Bekijk vacatures</Link>
               </Button>
-              <Button asChild variant="outline" className="rounded-full font-semibold px-6 h-11">
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-full font-semibold px-6 h-11"
+              >
                 <Link href="/">Home</Link>
               </Button>
             </div>
@@ -72,10 +145,30 @@ export default function GeneralApplicationPage() {
   }
 
   const sellingPoints = [
-    { icon: <Calendar className="h-5 w-5" />, title: "Werk wanneer jij wilt", description: "Jij bepaalt je eigen rooster en wanneer je beschikbaar bent." },
-    { icon: <CreditCard className="h-5 w-5" />, title: "Eerlijk betaald", description: "Geen gedoe. Transparante tarieven en snelle uitbetaling." },
-    { icon: <PartyPopper className="h-5 w-5" />, title: "De leukste events", description: "Van festivals tot chique diners — werk op de tofste locaties." },
-    { icon: <HeartHandshake className="h-5 w-5" />, title: "Persoonlijke begeleiding", description: "Een vast aanspreekpunt dat voor je klaarstaat. Altijd." },
+    {
+      icon: <Calendar className="h-5 w-5" />,
+      title: "Werk wanneer jij wilt",
+      description:
+        "Jij bepaalt je eigen rooster en wanneer je beschikbaar bent.",
+    },
+    {
+      icon: <CreditCard className="h-5 w-5" />,
+      title: "Eerlijk betaald",
+      description:
+        "Geen gedoe. Transparante tarieven en snelle uitbetaling.",
+    },
+    {
+      icon: <PartyPopper className="h-5 w-5" />,
+      title: "De leukste events",
+      description:
+        "Van festivals tot chique diners — werk op de tofste locaties.",
+    },
+    {
+      icon: <HeartHandshake className="h-5 w-5" />,
+      title: "Persoonlijke begeleiding",
+      description:
+        "Een vast aanspreekpunt dat voor je klaarstaat. Altijd.",
+    },
   ];
 
   return (
@@ -99,11 +192,14 @@ export default function GeneralApplicationPage() {
               </span>
             </AnimatedSection>
             <AnimatedSection delay={0.1}>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Algemene Sollicitatie</h1>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+                Algemene Sollicitatie
+              </h1>
             </AnimatedSection>
             <AnimatedSection delay={0.2}>
               <p className="text-lg text-white/60 leading-relaxed max-w-xl">
-                Geen geschikte vacature gevonden? Schrijf je in en wij vinden de juiste match zodra er een passende functie vrijkomt.
+                Geen geschikte vacature gevonden? Schrijf je in en wij vinden de
+                juiste match zodra er een passende functie vrijkomt.
               </p>
             </AnimatedSection>
           </div>
@@ -113,11 +209,12 @@ export default function GeneralApplicationPage() {
       {/* ── Main content ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-14">
-
           {/* Left column — Selling points */}
           <div className="lg:col-span-2 space-y-8">
             <AnimatedSection>
-              <h2 className="text-2xl font-bold tracking-tight">Waarom Flexia?</h2>
+              <h2 className="text-2xl font-bold tracking-tight">
+                Waarom Flexia?
+              </h2>
             </AnimatedSection>
 
             <div className="space-y-2">
@@ -128,8 +225,12 @@ export default function GeneralApplicationPage() {
                       {item.icon}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.description}</p>
+                      <h3 className="font-semibold text-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                 </AnimatedSection>
@@ -142,16 +243,28 @@ export default function GeneralApplicationPage() {
             <AnimatedSection animation="slide-right">
               <div className="rounded-2xl border border-border bg-card shadow-layered-lg p-6 md:p-8 space-y-6">
                 <div className="space-y-1.5">
-                  <h2 className="text-2xl font-bold tracking-tight">Jouw gegevens</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">
+                    Jouw gegevens
+                  </h2>
                   <p className="text-sm text-muted-foreground">
-                    Vul het formulier in en we nemen zo snel mogelijk contact met je op.
+                    Vul het formulier zo volledig mogelijk in, dan kunnen wij je
+                    sneller matchen.
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* --- Persoonlijke gegevens --- */}
+                  <div className="space-y-1.5 pt-2">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
+                      Persoonlijke gegevens
+                    </h3>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-sm font-medium">Voornaam *</Label>
+                      <Label htmlFor="firstName" className="text-sm font-medium">
+                        Voornaam *
+                      </Label>
                       <Input
                         id="firstName"
                         required
@@ -162,7 +275,9 @@ export default function GeneralApplicationPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-sm font-medium">Achternaam *</Label>
+                      <Label htmlFor="lastName" className="text-sm font-medium">
+                        Achternaam *
+                      </Label>
                       <Input
                         id="lastName"
                         required
@@ -173,8 +288,55 @@ export default function GeneralApplicationPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="birthDate"
+                        className="text-sm font-medium"
+                      >
+                        Geboortedatum *
+                      </Label>
+                      <Input
+                        id="birthDate"
+                        type="date"
+                        required
+                        value={birthDate}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gender" className="text-sm font-medium">
+                        Geslacht
+                      </Label>
+                      <Select value={gender} onValueChange={setGender}>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Selecteer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="man">Man</SelectItem>
+                          <SelectItem value="vrouw">Vrouw</SelectItem>
+                          <SelectItem value="anders">Anders</SelectItem>
+                          <SelectItem value="geen-voorkeur">
+                            Zeg ik liever niet
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* --- Contact --- */}
+                  <div className="space-y-1.5 pt-4">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
+                      Contactgegevens
+                    </h3>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">E-mailadres *</Label>
+                    <Label htmlFor="email" className="text-sm font-medium">
+                      E-mailadres *
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -185,32 +347,160 @@ export default function GeneralApplicationPage() {
                       className="h-11"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium">Telefoonnummer *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="06 12345678"
-                      className="h-11"
-                    />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-sm font-medium">
+                        Telefoonnummer *
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="06 12345678"
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="text-sm font-medium">
+                        Woonplaats *
+                      </Label>
+                      <Input
+                        id="city"
+                        required
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Bijv. Amsterdam"
+                        className="h-11"
+                      />
+                    </div>
                   </div>
+
+                  {/* --- Beschikbaarheid --- */}
+                  <div className="space-y-1.5 pt-4">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
+                      Beschikbaarheid
+                    </h3>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="motivation" className="text-sm font-medium">Motivatie (optioneel)</Label>
+                    <Label className="text-sm font-medium">
+                      Wanneer ben je beschikbaar? *
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {AVAILABILITY_OPTIONS.map((day) => {
+                        const isSelected = availability.includes(day.value);
+                        return (
+                          <button
+                            key={day.value}
+                            type="button"
+                            onClick={() => toggleAvailability(day.value)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
+                              isSelected
+                                ? "bg-foreground text-background border-foreground"
+                                : "bg-background text-foreground border-border hover:border-foreground/30"
+                            }`}
+                          >
+                            {day.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {availability.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Selecteer minimaal 1 dag
+                      </p>
+                    )}
+                  </div>
+
+                  {/* --- Werkvoorkeur --- */}
+                  <div className="space-y-1.5 pt-4">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
+                      Werkvoorkeur
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      In welke categorie wil je werken?
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {CATEGORY_OPTIONS.map((cat) => {
+                        const isSelected = selectedVacatures.includes(
+                          cat.value
+                        );
+                        return (
+                          <button
+                            key={cat.value}
+                            type="button"
+                            onClick={() => toggleCategory(cat.value)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
+                              isSelected
+                                ? "bg-foreground text-background border-foreground"
+                                : "bg-background text-foreground border-border hover:border-foreground/30"
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="experience" className="text-sm font-medium">
+                      Ervaring in de horeca
+                    </Label>
+                    <Select value={experience} onValueChange={setExperience}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecteer je ervaring" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="geen">
+                          Geen ervaring
+                        </SelectItem>
+                        <SelectItem value="minder-dan-1-jaar">
+                          Minder dan 1 jaar
+                        </SelectItem>
+                        <SelectItem value="1-2-jaar">1-2 jaar</SelectItem>
+                        <SelectItem value="3-5-jaar">3-5 jaar</SelectItem>
+                        <SelectItem value="meer-dan-5-jaar">
+                          Meer dan 5 jaar
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* --- Motivatie --- */}
+                  <div className="space-y-1.5 pt-4">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
+                      Over jou
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="motivation"
+                      className="text-sm font-medium"
+                    >
+                      Motivatie (optioneel)
+                    </Label>
                     <Textarea
                       id="motivation"
                       value={motivation}
                       onChange={(e) => setMotivation(e.target.value)}
-                      rows={5}
-                      placeholder="Vertel ons waarom je bij Flexia wilt werken..."
+                      rows={4}
+                      placeholder="Vertel kort over jezelf, je ervaring en waarom je bij Flexia wilt werken..."
                     />
                   </div>
+
+                  {/* --- Submit --- */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <Button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || availability.length === 0}
                       className="flex-1 bg-foreground text-background hover:bg-foreground/90 rounded-full font-semibold h-12 text-base transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group"
                     >
                       {loading ? (
