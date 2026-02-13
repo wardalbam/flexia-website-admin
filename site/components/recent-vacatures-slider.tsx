@@ -13,7 +13,7 @@ type Vacature = {
   category?: { name: string } | null;
 };
 
-export default function RecentVacaturesSlider({ vacatures }: { vacatures: Vacature[] }) {
+export default function RecentVacaturesSlider({ vacatures, variant = "dark" }: { vacatures: Vacature[]; variant?: "dark" | "light" }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [current, setCurrent] = useState(0);
   const pauseRef = useRef(false);
@@ -81,24 +81,33 @@ export default function RecentVacaturesSlider({ vacatures }: { vacatures: Vacatu
 
       <div className="overflow-x-auto scrollbar-hide scroll-smooth -mx-6 px-6 md:mx-0 md:px-0" ref={containerRef}>
         <div className="flex gap-6 w-max">
-          {vacatures.map((v) => (
-            <Link key={v.id} href={`/vacatures/${v.id}/apply`} className="block min-w-[300px] md:min-w-[360px]">
-              <div className="group relative rounded-lg border border-white/10 p-6 md:p-8 transition-all duration-500 hover:border-white/20 hover:bg-white/5 cursor-pointer h-full bg-transparent">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-[var(--brand)]">{v.category?.name || "Horeca"}</span>
-                    <span className="text-xs text-white/30">#{v.vacatureNumber}</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-[var(--brand)] transition-colors duration-300 line-clamp-2">{v.title}</h3>
-                  <p className="text-sm text-white/40 line-clamp-3">{v.description}</p>
-                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                    <span className="text-sm font-medium text-white">€{v.salary}/uur</span>
-                    <ArrowUpRight className="h-4 w-4 text-white/30 transition-all duration-300 group-hover:text-[var(--brand)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          {vacatures.map((v) => {
+            const isLight = variant === "light";
+            return (
+              <Link key={v.id} href={`/vacatures/${v.id}/apply`} className="block min-w-[300px] md:min-w-[360px]">
+                <div
+                  className={`group relative rounded-lg p-6 md:p-8 transition-all duration-500 cursor-pointer h-full ${
+                    isLight
+                      ? "bg-white border border-border hover:shadow-md"
+                      : "border border-white/10 hover:border-white/20 hover:bg-white/5 bg-transparent"
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-[var(--brand)]">{v.category?.name || "Horeca"}</span>
+                      <span className={`${isLight ? "text-muted-foreground" : "text-white/30"} text-xs`}>#{v.vacatureNumber}</span>
+                    </div>
+                    <h3 className={`text-lg font-bold transition-colors duration-300 line-clamp-2 ${isLight ? "text-foreground group-hover:text-[var(--brand)]" : "text-white group-hover:text-[var(--brand)]"}`}>{v.title}</h3>
+                    <p className={`${isLight ? "text-muted-foreground" : "text-white/40"} text-sm line-clamp-3`}>{v.description}</p>
+                    <div className={`flex items-center justify-between pt-4 border-t ${isLight ? "border-border" : "border-white/10"}`}>
+                      <span className={`${isLight ? "text-foreground" : "text-white"} text-sm font-medium`}>€{v.salary}/uur</span>
+                      <ArrowUpRight className={`h-4 w-4 transition-all duration-300 ${isLight ? "text-muted-foreground group-hover:text-[var(--brand)]" : "text-white/30 group-hover:text-[var(--brand)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"}`} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
 

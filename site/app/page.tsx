@@ -7,6 +7,7 @@ import { SectionHeading } from "../components/section-heading";
 import { StatCard } from "../components/stat-card";
 import { ServiceCard } from "../components/service-card";
 import RecentVacaturesSlider from "../components/recent-vacatures-slider";
+import HeroBlobs from "../components/hero-blobs";
 
 async function getVacatures() {
   try {
@@ -37,11 +38,8 @@ export default async function HomePage() {
             }}
           />
 
-          {/* Checked-in decorative SVG blobs (artful accents inspired by Webflow) */}
-          <img src="/images/hero-blob-1.svg" alt="" aria-hidden className="absolute -z-20 left-[-8%] top-[-6%] w-[40rem] opacity-90 mix-blend-multiply filter blur-sm" />
-          <img src="/images/hero-blob-2.svg" alt="" aria-hidden className="absolute -z-10 right-[-8%] top-14 w-[56rem] opacity-60 mix-blend-screen" />
-          {/* subtle texture overlay */}
-          <img src="/images/hero-texture.svg" alt="" aria-hidden className="absolute inset-0 -z-10 w-full h-full opacity-10 pointer-events-none" />
+    {/* Decorative animated blobs (client-side) */}
+    <HeroBlobs />
         <svg className="absolute -z-20 right-0 top-0 w-[40rem] opacity-20" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
           <g transform="translate(300,300)">
             <path d="M120,-160C160,-120,180,-60,180,-2C180,56,160,112,120,150C80,188,40,208,-6,216C-52,224,-104,220,-152,192C-200,164,-244,112,-260,52C-276,-8,-264,-76,-228,-122C-192,-168,-132,-192,-72,-200C-12,-208,48,-200,120,-160Z" fill="#ff7a59" />
@@ -287,7 +285,7 @@ export default async function HomePage() {
 
       {/* ========== RECENT VACATURES (slider) ========== */}
       {vacatures.length > 0 && (
-        <section className="py-24 md:py-40 surface-dark relative overflow-hidden">
+        <section className="py-24 md:py-40 bg-white relative overflow-hidden">
           <div className="mesh-blob mesh-brand w-[600px] h-[600px] top-0 -right-40 opacity-20" />
           <div className="max-w-7xl mx-auto px-6 lg:px-8 space-y-8 relative z-10">
             <div className="flex items-end justify-between">
@@ -295,17 +293,16 @@ export default async function HomePage() {
                 badge="Nieuwste"
                 title="Recente vacatures"
                 align="left"
-                dark
               />
-              <Link href="/vacatures" className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors animated-underline">
+              <Link href="/vacatures" className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors animated-underline">
                 Alle vacatures <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <RecentVacaturesSlider vacatures={vacatures.slice(0, 12)} />
+            <RecentVacaturesSlider vacatures={vacatures.slice(0, 12)} variant="light" />
 
             <div className="text-center md:hidden pt-4">
-              <Button asChild variant="outline" className="bg-transparent rounded-full px-8 font-medium border-white/20 text-white hover:bg-white/5">
+              <Button asChild variant="outline" className="bg-transparent rounded-full px-8 font-medium border-border text-foreground hover:bg-foreground/6">
                 <Link href="/vacatures">
                   Alle vacatures
                   <ArrowRight className="ml-2 h-4 w-4" />
