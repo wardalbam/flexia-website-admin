@@ -122,32 +122,38 @@ export default async function ApplicationsPage({
               </Button>
             </div>
 
-            {/* Active Filter Pills */}
+            {/* Active Filter Pills - make horizontally scrollable on small screens to avoid layout break */}
             {(selectedVacature || status || type) && (
-              <div className="flex flex-wrap items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 overflow-x-auto scrollbar-hide touch-scroll">
                 {type && (
-                  <Link href={`/applications${status ? `?status=${status}` : ""}${vacatureId ? `${status ? "&" : "?"}vacatureId=${vacatureId}` : ""}`}>
-                    <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
-                      Type: {type === "general" ? "Algemeen" : "Vacature-specifiek"}
-                      <X className="h-4 w-4" />
-                    </Badge>
-                  </Link>
+                  <div className="shrink-0">
+                    <Link href={`/applications${status ? `?status=${status}` : ""}${vacatureId ? `${status ? "&" : "?"}vacatureId=${vacatureId}` : ""}`}>
+                      <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+                        Type: {type === "general" ? "Algemeen" : "Vacature-specifiek"}
+                        <X className="h-4 w-4" />
+                      </Badge>
+                    </Link>
+                  </div>
                 )}
                 {selectedVacature && (
-                  <Link href={`/applications${status ? `?status=${status}` : ""}${type ? `${status ? "&" : "?"}type=${type}` : ""}`}>
-                    <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
-                      Vacature: #{selectedVacature.vacatureNumber} - {selectedVacature.title}
-                      <X className="h-4 w-4" />
-                    </Badge>
-                  </Link>
+                  <div className="shrink-0">
+                    <Link href={`/applications${status ? `?status=${status}` : ""}${type ? `${status ? "&" : "?"}type=${type}` : ""}`}>
+                      <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+                        Vacature: #{selectedVacature.vacatureNumber} - {selectedVacature.title}
+                        <X className="h-4 w-4" />
+                      </Badge>
+                    </Link>
+                  </div>
                 )}
                 {status && (
-                  <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}${type ? `${vacatureId ? "&" : "?"}type=${type}` : ""}`}>
-                    <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 max-w-full truncate">
-                      Status: {statusLabels[status] || status}
-                      <X className="h-4 w-4" />
-                    </Badge>
-                  </Link>
+                  <div className="shrink-0">
+                    <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}${type ? `${vacatureId ? "&" : "?"}type=${type}` : ""}`}>
+                      <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+                        Status: {statusLabels[status] || status}
+                        <X className="h-4 w-4" />
+                      </Badge>
+                    </Link>
+                  </div>
                 )}
               </div>
             )}

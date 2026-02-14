@@ -21,8 +21,10 @@ export function FilterSection({
     return (
       <div className="space-y-2">
         <h3 className="text-sm font-bold text-foreground tracking-tight">{title}</h3>
-        <div className="flex flex-wrap gap-2">
-          {children}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide touch-scroll">
+          {React.Children.map(children, (child) => (
+            <div className="shrink-0">{child}</div>
+          ))}
         </div>
       </div>
     );
@@ -41,8 +43,10 @@ export function FilterSection({
         )} />
       </button>
       {isExpanded && (
-        <div className="flex flex-wrap gap-2">
-          {children}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide touch-scroll">
+          {React.Children.map(children, (child) => (
+            <div className="shrink-0">{child}</div>
+          ))}
         </div>
       )}
     </div>

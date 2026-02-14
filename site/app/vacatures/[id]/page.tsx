@@ -62,12 +62,15 @@ const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
 
 async function getVacature(id: string): Promise<Vacature | null> {
   try {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
-    const res = await fetch(`${apiUrl}/api/vacatures/${id}`, {
+    // Prefer explicit frontend-configured API URL. If not set,
+    // fall back to Vercel-provided URL on server, otherwise use a
+    // relative request so the same origin is used (works in dev and
+    // production when front and API are co-hosted).
+    const configured = process.env.NEXT_PUBLIC_API_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+    const base = configured ? configured.replace(/\/$/, "") : "";
+    const fetchUrl = base ? `${base}/api/vacatures/${id}` : `/api/vacatures/${id}`;
+
+    const res = await fetch(fetchUrl, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return null;

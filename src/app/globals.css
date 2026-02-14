@@ -143,4 +143,9 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Smooth native scrolling on iOS */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
 }
