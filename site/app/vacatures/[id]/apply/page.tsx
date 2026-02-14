@@ -23,9 +23,15 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchVacature = async () => {
+      // Guard: only fetch when we have a valid id
+      if (!id) {
+        setLoadingVacature(false);
+        return;
+      }
+
       try {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
-  const res = await fetch(`${apiUrl}/api/vacatures/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+        const res = await fetch(`${apiUrl}/api/vacatures/${id}`);
         if (res.ok) setVacature(await res.json());
       } catch (error) {
         console.error("Failed to fetch vacancy:", error);
@@ -40,15 +46,23 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
     e.preventDefault();
     setLoading(true);
     try {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
-  const res = await fetch(`${apiUrl}/api/applications`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+      // Only include vacatureId / selectedVacatures when id is present
+      const payload: any = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        selectedVacatures: id ? [id] : [],
+        availability: [],
+        source: "website",
+      };
+      if (id) payload.vacatureId = id;
+
+      const res = await fetch(`${apiUrl}/api/applications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName, lastName, email, phone,
-          selectedVacatures: [id], availability: [],
-          source: "website", vacatureId: id,
-        }),
+        body: JSON.stringify(payload),
       });
       if (res.status === 201) setSuccess(true);
       else alert("Fout bij verzenden");

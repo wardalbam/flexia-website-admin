@@ -10,8 +10,10 @@ export default auth((req) => {
     isLogin ||
     isSiteRoute ||
     pathname.startsWith("/api/auth") ||
-    (pathname.startsWith("/api/vacatures") && req.method === "GET") ||
-    (pathname === "/api/applications" && req.method === "POST");
+    // Allow GET and OPTIONS for vacatures (so preflight requests are not redirected)
+    (pathname.startsWith("/api/vacatures") && (req.method === "GET" || req.method === "OPTIONS")) ||
+    // Allow POST and OPTIONS for applications (frontend posts and preflights)
+    (pathname === "/api/applications" && (req.method === "POST" || req.method === "OPTIONS"));
 
   // If an authenticated user tries to visit /login, send them to the app root
   if (isLogin && req.auth) {

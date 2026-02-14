@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Badge } from "../../components/ui/badge";
+import { Badge } from "../../../components/ui/badge";
 import { MapPin, Briefcase, Euro, ArrowLeft } from "lucide-react";
-import { getCategoryColor } from "../../lib/status-colors";
+import { getCategoryColor } from "../../../lib/status-colors";
 
 type Params = { params: { id: string } };
 
