@@ -28,6 +28,9 @@ export async function GET(
           category: true,
         },
       },
+      history: {
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
@@ -61,16 +64,61 @@ export async function PATCH(
     return NextResponse.json({ error: "Sollicitatie niet gevonden" }, { status: 404 });
   }
 
-  const application = await prisma.application.update({
-    where: { id },
-    data: parsed.data,
-    include: {
-      vacature: {
-        include: {
-          category: true,
+  const userId = session.user?.id ?? null;
+  const userName = session.user?.name || session.user?.email || null;
+
+  // Build history entries for changes
+  const historyEntries: {
+    applicationId: string;
+    type: string;
+    oldStatus?: string;
+    newStatus?: string;
+    note?: string;
+    userId: string | null;
+    userName: string | null;
+  }[] = [];
+
+  if (parsed.data.status && parsed.data.status !== existing.status) {
+    historyEntries.push({
+      applicationId: id,
+      type: "STATUS_CHANGE",
+      oldStatus: existing.status,
+      newStatus: parsed.data.status,
+      userId,
+      userName,
+    });
+  }
+
+  if (parsed.data.notes !== undefined && parsed.data.notes !== existing.notes && parsed.data.notes) {
+    historyEntries.push({
+      applicationId: id,
+      type: "NOTE",
+      note: parsed.data.notes,
+      userId,
+      userName,
+    });
+  }
+
+  // Use transaction: create history first, then update application (so included history is complete)
+  const application = await prisma.$transaction(async (tx) => {
+    for (const entry of historyEntries) {
+      await tx.applicationHistory.create({ data: entry });
+    }
+
+    return tx.application.update({
+      where: { id },
+      data: parsed.data,
+      include: {
+        vacature: {
+          include: {
+            category: true,
+          },
+        },
+        history: {
+          orderBy: { createdAt: "desc" },
         },
       },
-    },
+    });
   });
 
   return NextResponse.json(application);

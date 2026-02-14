@@ -7,11 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+type HistoryEntry = {
+  id: string;
+  type: string;
+  oldStatus?: string | null;
+  newStatus?: string | null;
+  note?: string | null;
+  userName?: string | null;
+  createdAt: string;
+};
 
 type Application = {
   id: string;
@@ -34,6 +44,7 @@ type Application = {
     category: { name: string } | null;
     slug: string;
   } | null;
+  history?: HistoryEntry[];
 };
 
 const statusLabels: Record<string, string> = {
@@ -285,6 +296,47 @@ export default function ApplicationDetailPage() {
                 </Button>
               </CardContent>
             </Card>
+
+            {application.history && application.history.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Geschiedenis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {application.history.map((entry) => (
+                      <div key={entry.id} className="flex gap-3 text-sm">
+                        <div className="mt-0.5 shrink-0">
+                          {entry.type === "STATUS_CHANGE" ? (
+                            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
+                              <ArrowRightLeft className="h-3.5 w-3.5 text-blue-700" />
+                            </div>
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center">
+                              <MessageSquare className="h-3.5 w-3.5 text-amber-700" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          {entry.type === "STATUS_CHANGE" ? (
+                            <p>
+                              <span className="font-medium">{statusLabels[entry.oldStatus!] || entry.oldStatus}</span>
+                              {" → "}
+                              <span className="font-medium">{statusLabels[entry.newStatus!] || entry.newStatus}</span>
+                            </p>
+                          ) : (
+                            <p className="whitespace-pre-wrap break-words">{entry.note}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {entry.userName || "Systeem"} &middot; {new Date(entry.createdAt).toLocaleString("nl-NL")}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>

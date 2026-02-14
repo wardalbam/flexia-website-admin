@@ -7,7 +7,6 @@ import { SectionHeading } from "../components/section-heading";
 import { StatCard } from "../components/stat-card";
 import { ServiceCard } from "../components/service-card";
 import RecentVacaturesSlider from "../components/recent-vacatures-slider";
-import HeroBlobs from "../components/hero-blobs";
 
 import { apiUrl } from "../lib/api";
 
@@ -39,13 +38,6 @@ export default async function HomePage() {
             }}
           />
 
-    {/* Decorative animated blobs (client-side) */}
-    <HeroBlobs />
-        <svg className="absolute -z-20 right-0 top-0 w-[40rem] opacity-20" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-          <g transform="translate(300,300)">
-            <path d="M120,-160C160,-120,180,-60,180,-2C180,56,160,112,120,150C80,188,40,208,-6,216C-52,224,-104,220,-152,192C-200,164,-244,112,-260,52C-276,-8,-264,-76,-228,-122C-192,-168,-132,-192,-72,-200C-12,-208,48,-200,120,-160Z" fill="#ff7a59" />
-          </g>
-        </svg>
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 w-full">
           <div className="max-w-3xl space-y-6">
             <AnimatedSection>
