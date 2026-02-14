@@ -246,7 +246,7 @@ export default function VacaturesPage() {
               const categoryColor = getCategoryColor(v.category?.name);
               return (
                 <AnimatedSection key={v.id} delay={Math.min(i * 0.05, 0.3)}>
-                  <Link href={`/singel/${v.id}`}>
+                  <Link href={`/vacatures/${v.id}`}>
                     <div className={cn(
                       "group relative bg-white border border-border rounded-lg p-6 h-full",
                       "hover-lift cursor-pointer",
