@@ -17,12 +17,12 @@ import { getCategoryColor } from "@/lib/status-colors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import VacatureQuickView from "./VacatureQuickView";
-import { MapPin, Users, Briefcase, Search, X } from "lucide-react";
+import { MapPin, Users, Briefcase, Search, X, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Vacature = any;
 
-export default function VacatureList({ initialVacatures, onSelect, compact = false }: { initialVacatures: Vacature[]; onSelect?: (id: string) => void; compact?: boolean }) {
+export default function VacatureList({ initialVacatures, onSelect, compact = false, selectedId }: { initialVacatures: Vacature[]; onSelect?: (id: string) => void; compact?: boolean; selectedId?: string }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const prefetched = useRef(new Set<string>());
@@ -115,8 +115,9 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
 
   return (
     <div className="space-y-4">
-      {/* Status Tabs */}
-      <div className="flex items-center gap-1 border-b border-border">
+      {/* Status Tabs: make horizontally scrollable to avoid stretching the cards container */}
+      <div className="overflow-x-auto max-w-full">
+        <div className="flex items-center gap-1 border-b border-border min-w-max">
         {[
           { value: "all", label: "Alle", count: counts.all },
           { value: "active", label: "Actief", count: counts.active },
@@ -127,7 +128,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
             key={tab.value}
             onClick={() => setStatusFilter(tab.value)}
             className={cn(
-              "px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px",
+              "px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px whitespace-nowrap",
               statusFilter === tab.value
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
@@ -142,6 +143,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
             )}>{tab.count}</span>
           </button>
         ))}
+      </div>
       </div>
 
       {/* Filters Row */}
@@ -226,6 +228,9 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
             const categoryColor = getCategoryColor(v.category?.name);
             const applicationsCount = v._count?.applications ?? 0;
             const dateAdded = v.createdAt || v.publishedAt;
+            const daysOnline = dateAdded ? Math.max(0, Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
+            const isSelected = selectedId ? String(v.id) === String(selectedId) : false;
 
             return (
               <div
@@ -266,9 +271,23 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                 }}
               >
                 <Card
-                  className="relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden"
+                  className={cn(
+                    "relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden",
+                    isSelected ? "ring-2 ring-[var(--brand)] bg-[var(--brand)]/5" : ""
+                  )}
                   onClick={(e) => {
-                      // select vacancy in parent shell instead of navigating away
+                      // On small screens, open the quick-view dialog (full-screen) instead of switching the split shell
+                      try {
+                        const isMobile = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+                        if (isMobile) {
+                          // open quick view modal for mobile
+                          setQuickId(String(v.id));
+                          setQuickOpen(true);
+                          return;
+                        }
+                      } catch (err) {}
+
+                      // select vacancy in parent shell instead of navigating away on desktop
                       e.preventDefault();
                       e.stopPropagation();
                       if (onSelect) onSelect(String(v.id));
@@ -289,6 +308,11 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                     <h3 className="font-black text-lg tracking-tight line-clamp-2 mb-2 pr-12 group-hover:text-foreground transition-colors">
                       {v.title}
                     </h3>
+
+                    {/* Short description (frontend-like) */}
+                    {v.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{v.description}</p>
+                    )}
 
                     {/* Category & Company */}
                     <div className="flex items-center gap-2 mb-2">
@@ -331,25 +355,38 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                       )}
                     </div>
 
-                    {/* Footer - Applications & Status */}
-                    <div className="flex items-center gap-2 mt-auto pt-2">
-                      <div className="flex items-center gap-1.5 bg-muted text-foreground rounded-lg px-2.5 py-1.5 border border-border">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm font-black">{applicationsCount}</span>
-                        <span className="text-[10px] font-bold">sollicitaties</span>
+                    {/* Footer - Applications, salary and status (frontend-like bottom row) */}
+                    <div className="mt-auto pt-4 border-t border-border pt-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 bg-muted text-foreground rounded-lg px-2.5 py-1.5 border border-border">
+                            <Users className="h-4 w-4" />
+                            <div className="text-sm font-black">{applicationsCount}</div>
+                            <div className="text-[10px] font-bold">sollicitaties</div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground">{daysOnline} dagen</div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium">€{v.salary ?? 0}/uur</div>
+                          <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       </div>
 
-                      {!v.isActive && (
-                        <Badge className="bg-red-500/10 text-red-700 border-red-500/20 text-xs font-bold px-2 py-1">
-                          Inactief
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        {!v.isActive && (
+                          <Badge className="bg-red-500/10 text-red-700 border-red-500/20 text-xs font-bold px-2 py-1">
+                            Inactief
+                          </Badge>
+                        )}
 
-                      {v.archived && (
-                        <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 text-xs font-bold px-2 py-1">
-                          Gearchiveerd
-                        </Badge>
-                      )}
+                        {v.archived && (
+                          <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 text-xs font-bold px-2 py-1">
+                            Gearchiveerd
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -32,7 +32,8 @@ export default function VacatureQuickView({ id, open, onOpenChange }: { id: stri
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-full">
+      {/* Fullscreen on small screens, centered modal on larger screens */}
+      <DialogContent className="w-full max-w-none h-[100dvh] sm:h-auto sm:max-w-3xl rounded-none sm:rounded-lg top-0 sm:top-[50%] left-0 sm:left-[50%] translate-x-0 sm:translate-x-[-50%] translate-y-0 sm:translate-y-[-50%]">
         <DialogHeader>
           <DialogTitle>{vacature ? vacature.title : "Vacature"}</DialogTitle>
         </DialogHeader>

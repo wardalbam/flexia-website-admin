@@ -201,7 +201,8 @@ export function VacatureDetailView({
     <div className={cn("flex flex-col lg:flex-row transition-transform duration-200 ease-out", entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2")}>
       {/* Sidebar with Vacature List - Desktop Only (render only when this detail view is standalone) */}
       {!onClose && (
-        <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
+        // Left column should be sticky and scroll independently from the main content.
+        <aside className="hidden lg:block w-80 border-r border-border bg-card lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:overflow-auto">
         <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
           {onClose ? (
             <Button variant="ghost" size="sm" className="gap-2 font-bold" onClick={onClose}>
