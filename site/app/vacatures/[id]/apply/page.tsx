@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -11,8 +11,8 @@ import { apiUrl } from "../../../../lib/api";
 
 type Vacature = any;
 
-export default function ApplyPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function ApplyPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [vacature, setVacature] = useState<Vacature | null>(null);
   const [loadingVacature, setLoadingVacature] = useState(true);
   const [firstName, setFirstName] = useState("");
