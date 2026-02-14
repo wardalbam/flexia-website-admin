@@ -60,6 +60,17 @@ export function VacatureDetailView({
   const [entered, setEntered] = useState(false);
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+  // Keep internal selectedId in sync when parent passes a different initialVacature.
+  useEffect(() => {
+    if (initialVacature?.id && initialVacature.id !== selectedId) {
+      setSelectedId(initialVacature.id);
+    }
+    // Also reset content visibility when a new vacancy is provided
+    // so skeletons show briefly and content fades in.
+    // (Handled by contentVisible effect elsewhere.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialVacature?.id]);
+
   // Use SWR to fetch and cache vacancy details across the admin session.
   const { data: selectedVacature, error } = useSWR(
     selectedId ? `/api/vacatures/${selectedId}` : null,
@@ -67,11 +78,12 @@ export function VacatureDetailView({
     {
       fallbackData: selectedId === initialVacature.id ? initialVacature : undefined,
       revalidateOnFocus: false,
-      // When we provide the initialVacature that matches selectedId we don't want
-      // SWR to revalidate on mount — we want to use the already-fetched data
-      // from the list to avoid extra network requests and spinners.
-      revalidateOnMount: false,
-      revalidateIfStale: false,
+      // Only skip the initial revalidation when we have fallbackData for the
+      // currently selected id (i.e. it's the same as the server-provided
+      // `initialVacature`). For other ids we want SWR to fetch the detail as
+      // usual.
+      revalidateOnMount: selectedId === initialVacature.id ? false : true,
+      revalidateIfStale: selectedId === initialVacature.id ? false : true,
     }
   );
 
