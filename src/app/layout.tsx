@@ -58,7 +58,7 @@ export default async function RootLayout({
           <div
             role="main"
             className={cn(
-              "min-h-screen mt-2 min-w-0",
+              "min-h-screen min-w-0",
               hideLayout ? "" : "md:ml-64 pb-20 md:pb-4"
             )}
           >

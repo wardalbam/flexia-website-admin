@@ -131,7 +131,7 @@ export default function SettingsPage() {
                   minLength={8}
                 />
               </div>
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="rounded-full">
                 {saving ? "Opslaan..." : "Wachtwoord Wijzigen"}
               </Button>
             </form>

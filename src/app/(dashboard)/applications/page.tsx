@@ -75,7 +75,7 @@ export default async function ApplicationsPage({
     <>
       <main className="p-4 md:p-6 space-y-6">
         {/* Modern Filter Section */}
-        <div className="bg-card rounded-xl border border-border shadow-sm p-4 md:p-6">
+        <div className="bg-card rounded-xl border border-border shadow-layered p-4 md:p-6">
           <form className="flex flex-col gap-3" action="/applications" method="GET">
             <div className="flex flex-col md:flex-row gap-3">
               <input
@@ -117,7 +117,7 @@ export default async function ApplicationsPage({
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
-              <Button type="submit" className="font-semibold">
+              <Button type="submit" className="font-semibold rounded-full">
                 Filteren
               </Button>
             </div>
@@ -177,7 +177,7 @@ export default async function ApplicationsPage({
           ) : (
           applications.map((app: any) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="hover:shadow-lg transition-all hover:scale-[1.01] group">
+                <Card className="hover-lift group">
                   <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
                     <div className="space-y-1 flex-1 min-w-0">
                       <p className="font-bold text-base tracking-tight">
@@ -219,7 +219,7 @@ export default async function ApplicationsPage({
             {page > 1 && (
               <Link
                 href={`/applications?${buildQueryString(page - 1)}`}
-                className="px-3 py-1.5 border border-input rounded-lg text-sm hover:bg-muted"
+                className="px-4 py-2 border border-input rounded-full text-sm font-medium hover:bg-muted transition-all"
               >
                 Vorige
               </Link>
@@ -227,7 +227,7 @@ export default async function ApplicationsPage({
             {page < totalPages && (
               <Link
                 href={`/applications?${buildQueryString(page + 1)}`}
-                className="px-3 py-1.5 border border-input rounded-lg text-sm hover:bg-muted"
+                className="px-4 py-2 border border-input rounded-full text-sm font-medium hover:bg-muted transition-all"
               >
                 Volgende
               </Link>

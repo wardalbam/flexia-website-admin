@@ -26,14 +26,16 @@ export function Sidebar() {
   if (pathname === "/login") return null;
 
   return (
-    <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card">
+    <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/[0.08] bg-[var(--surface-dark)]">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-sm">
-            <span className="text-primary-foreground font-black text-lg">F</span>
+        <div className="flex h-16 items-center gap-3 border-b border-white/[0.08] px-6">
+          <div className="w-10 h-10 bg-gradient-to-br from-[var(--brand)] to-[var(--brand-dark)] rounded-xl flex items-center justify-center shadow-sm">
+            <span className="text-black font-black text-lg">F</span>
           </div>
-          <span className="font-black text-xl tracking-tight">Flexia</span>
+          <span className="font-black text-xl tracking-tight text-white">
+            flexia<span className="text-[var(--brand)]">.</span>
+          </span>
         </div>
 
         {/* Navigation */}
@@ -55,10 +57,10 @@ export function Sidebar() {
                 href={item.href}
                 prefetch={true}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-300",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]"
+                    ? "bg-white/10 text-white shadow-sm"
+                    : "text-white/50 hover:bg-white/[0.05] hover:text-white"
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -69,10 +71,10 @@ export function Sidebar() {
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-border p-4">
+        <div className="border-t border-white/[0.08] p-4">
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive hover:scale-[1.01]"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white/50 transition-all duration-300 hover:bg-red-500/10 hover:text-red-400"
           >
             <LogOut className="h-5 w-5" />
             Uitloggen

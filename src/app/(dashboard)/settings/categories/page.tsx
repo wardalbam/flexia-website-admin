@@ -36,7 +36,7 @@ export default async function CategoriesManagementPage() {
           </p>
         </div>
         <Link href="/settings/categories/new">
-          <Button className="gap-2 font-bold">
+          <Button className="gap-2 font-bold rounded-full">
             <Plus className="h-4 w-4" />
             Nieuwe Categorie
           </Button>
@@ -71,7 +71,7 @@ export default async function CategoriesManagementPage() {
         ) : (
           categories.map((category) => (
             <Link key={category.id} href={`/settings/categories/${category.id}`}>
-              <Card className="hover:shadow-lg transition-all hover:scale-[1.01] group cursor-pointer">
+              <Card className="hover-lift transition-all group cursor-pointer">
                 <CardContent className="flex items-center justify-between py-4">
                   <div className="flex items-center gap-4 flex-1">
                     <div

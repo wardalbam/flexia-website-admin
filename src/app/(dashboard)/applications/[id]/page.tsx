@@ -280,7 +280,7 @@ export default function ApplicationDetailPage() {
                     placeholder="Voeg notities toe..."
                   />
                 </div>
-                <Button onClick={handleUpdate} disabled={saving} className="w-full">
+                <Button onClick={handleUpdate} disabled={saving} className="w-full rounded-full font-semibold">
                   {saving ? "Opslaan..." : "Bijwerken"}
                 </Button>
               </CardContent>
@@ -291,7 +291,7 @@ export default function ApplicationDetailPage() {
                 <CardTitle className="text-destructive">Danger Zone</CardTitle>
               </CardHeader>
               <CardContent>
-                <Button variant="destructive" onClick={handleDelete} className="w-full">
+                <Button variant="destructive" onClick={handleDelete} className="w-full rounded-full">
                   Verwijderen
                 </Button>
               </CardContent>

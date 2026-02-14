@@ -470,10 +470,10 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto">
+          <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto rounded-full">
             Annuleren
           </Button>
-          <Button type="submit" disabled={saving} className="w-full sm:w-auto">
+          <Button type="submit" disabled={saving} className="w-full sm:w-auto rounded-full font-semibold">
             <Save className="h-4 w-4 mr-2" />
             {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
           </Button>

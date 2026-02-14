@@ -52,7 +52,7 @@ export default async function UsersManagementPage() {
         </div>
         {isAdmin && (
           <Link href="/settings/users/new">
-            <Button className="gap-2 font-bold">
+            <Button className="gap-2 font-bold rounded-full">
               <Plus className="h-4 w-4" />
               Nieuwe Gebruiker
             </Button>

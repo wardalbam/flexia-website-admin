@@ -103,7 +103,7 @@ export default async function NewUserPage() {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1 font-bold">
+              <Button type="submit" className="flex-1 font-bold rounded-full">
                 Gebruiker Aanmaken
               </Button>
               <Link href="/settings/users" className="flex-1">

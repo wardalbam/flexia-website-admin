@@ -22,21 +22,21 @@ export function Header({ title }: { title?: string }) {
   })();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full glass shadow-layered">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Mobile: Logo icon + title */}
         <div className="flex items-center gap-3 md:hidden">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-black text-sm">F</span>
+          <div className="w-8 h-8 bg-[var(--brand)] rounded-lg flex items-center justify-center">
+            <span className="text-black font-black text-sm">F</span>
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-tight">{inferredTitle}</h1>
+            <h1 className="text-base font-bold">{inferredTitle}</h1>
           </div>
         </div>
 
         {/* Desktop: Page title only */}
         <div className="hidden md:block">
-          <h1 className="text-xl font-bold tracking-tight">{inferredTitle}</h1>
+          <h1 className="text-xl font-bold">{inferredTitle}</h1>
         </div>
 
         {/* User profile (both mobile and desktop) */}
@@ -45,8 +45,8 @@ export function Header({ title }: { title?: string }) {
             <p className="text-sm font-semibold">{session?.user?.name || "Admin"}</p>
             <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
           </div>
-          <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20">
-            <span className="text-primary text-sm font-black">
+          <div className="w-10 h-10 bg-[var(--brand)]/10 rounded-full flex items-center justify-center border-2 border-[var(--brand)]/20">
+            <span className="text-[var(--brand)] text-sm font-black">
               {(session?.user?.name || "A")[0].toUpperCase()}
             </span>
           </div>

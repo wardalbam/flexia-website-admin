@@ -31,7 +31,7 @@ export default async function VacaturesPage() {
             {vacatures.length} vacatures totaal
           </p>
           <Link href="/vacatures/new">
-            <Button>
+            <Button className="rounded-full font-semibold">
               <Plus className="h-4 w-4 mr-2" />
               Nieuwe Vacature
             </Button>

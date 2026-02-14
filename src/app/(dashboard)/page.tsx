@@ -54,7 +54,7 @@ export default async function DashboardPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {stats.map((stat) => (
-                <Card key={stat.label} className="overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02] group">
+                <Card key={stat.label} className="overflow-hidden hover-lift group">
                   <CardContent className="p-6 relative">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
                     <div className="relative">
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
                       <Link
                         key={app.id}
                         href={`/applications/${app.id}`}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                        className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-300"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center">
@@ -149,8 +149,8 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-2">
-                  <Link href="/vacatures/new" className="text-sm text-primary hover:underline">Nieuwe vacature aanmaken</Link>
-                  <Link href="/applications" className="text-sm text-primary hover:underline">Bekijk sollicitaties</Link>
+                  <Link href="/vacatures/new" className="inline-flex items-center justify-center rounded-full bg-[var(--brand)] text-black px-6 py-2.5 text-sm font-semibold hover:bg-[var(--brand-light)] transition-all duration-300 hover:-translate-y-[1px]">Nieuwe vacature aanmaken</Link>
+                  <Link href="/applications" className="inline-flex items-center justify-center rounded-full border border-border bg-background px-6 py-2.5 text-sm font-semibold hover:bg-muted transition-all duration-300">Bekijk sollicitaties</Link>
                 </div>
               </CardContent>
             </Card>

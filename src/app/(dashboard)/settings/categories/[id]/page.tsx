@@ -158,7 +158,7 @@ export default async function EditCategoryPage({
                   Annuleren
                 </Button>
               </Link>
-              <Button type="submit" className="font-bold">
+              <Button type="submit" className="font-bold rounded-full">
                 Bijwerken
               </Button>
             </div>

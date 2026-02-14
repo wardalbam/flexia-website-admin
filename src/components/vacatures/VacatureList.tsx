@@ -250,7 +250,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
                   void fetch(`/api/vacatures/${v.id}`).catch(() => {});
                 }}
               >
-                <Card className="relative shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer border border-border h-full flex flex-col bg-card rounded-lg overflow-hidden">
+                <Card className="relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden">
                   <CardContent className="px-4 py-3 flex-1 flex flex-col">
                     {/* Vacancy Number Badge */}
                     <div className="absolute top-2 right-2 bg-muted/50 text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded">

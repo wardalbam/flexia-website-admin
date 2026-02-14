@@ -138,9 +138,9 @@ export function VacatureDetailView({
                 onMouseEnter={() => prefetchVacature(v.id)}
                 onFocus={() => prefetchVacature(v.id)}
                 className={cn(
-                  "w-full text-left p-3 rounded-lg border transition-all cursor-pointer",
+                  "w-full text-left p-3 rounded-xl border transition-all duration-300 cursor-pointer",
                   isActive
-                    ? "bg-primary/5 border-primary shadow-sm"
+                    ? "bg-[var(--brand)]/5 border-[var(--brand)] shadow-sm"
                     : "border-border hover:bg-muted hover:border-muted-foreground/20"
                 )}
               >
@@ -277,7 +277,7 @@ export function VacatureDetailView({
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
             <a href={`/vacatures/${selectedVacature.id}/edit`}>
-              <Button size="lg" className="font-bold gap-2">
+              <Button size="lg" className="font-bold gap-2 rounded-full">
                 <Edit className="h-5 w-5" />
                 Bewerken
               </Button>
@@ -285,7 +285,7 @@ export function VacatureDetailView({
             <Button
               size="lg"
               variant="destructive"
-              className="font-bold gap-2"
+              className="font-bold gap-2 rounded-full"
               onClick={() => setDeleteOpen(true)}
             >
               <Trash2 className="h-5 w-5" />

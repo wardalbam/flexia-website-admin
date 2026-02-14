@@ -19,7 +19,7 @@ export function MobileBottomNav() {
   if (pathname === "/login") return null;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg safe-area-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass shadow-layered safe-area-bottom">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive =
@@ -35,9 +35,9 @@ export function MobileBottomNav() {
               href={item.href}
               prefetch={true}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all flex-1 max-w-[100px]",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-300 flex-1 max-w-[100px]",
                 isActive
-                  ? "text-primary"
+                  ? "text-[var(--brand)]"
                   : "text-muted-foreground hover:text-foreground active:scale-95"
               )}
             >
