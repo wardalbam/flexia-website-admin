@@ -146,10 +146,18 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       const url = isEditing ? `/api/vacatures/${initialData!.id}` : "/api/vacatures";
       const method = isEditing ? "PUT" : "POST";
 
+      // If editing, enforce deterministic slug based on the vacature id so
+      // admins can't accidentally change public URLs. For new vacatures we
+      // allow the generated slug from the title.
+      const payload = { ...data } as any;
+      if (isEditing && initialData?.id) {
+        payload.slug = initialData.id;
+      }
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -228,15 +236,18 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Slug (URL)</Label>
-              <Input
-                value={data.slug}
-                onChange={(e) => setData({ ...data, slug: e.target.value })}
-                placeholder="catering-den-haag-1"
-                required
-              />
-            </div>
+            {/* Hide slug when editing: we auto-manage slugs and set them to the vacature id on update */}
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label>Slug (URL)</Label>
+                <Input
+                  value={data.slug}
+                  onChange={(e) => setData({ ...data, slug: e.target.value })}
+                  placeholder="catering-den-haag-1"
+                  required
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Vacaturenummer</Label>
               <Input

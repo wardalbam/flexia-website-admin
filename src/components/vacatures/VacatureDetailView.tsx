@@ -28,6 +28,7 @@ import {
   CheckCircle2,
   Gift,
   ArrowLeft,
+  Share2,
 } from "lucide-react";
 
 type Vacature = any;
@@ -134,6 +135,27 @@ export function VacatureDetailView({
     } finally {
       setDeleting(false);
       setDeleteOpen(false);
+    }
+  };
+
+  const handleShare = async () => {
+    // Prefer a configured public frontend origin, fall back to the public site used in repo
+    const origin = (process.env.NEXT_PUBLIC_FRONTEND_URL as string) || "https://www.flexiajobs.nl";
+    const publicPath = `/singel/${vacancy.id}`;
+    const url = `${origin.replace(/\/$/, "")}${publicPath}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: vacancy.title || "Vacature", url });
+        toast.success("Link gedeeld");
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+      toast.success("Link gekopieerd naar klembord");
+    } catch (err) {
+      // fallback: open the link in a new tab
+      window.open(url, "_blank");
     }
   };
 
@@ -307,6 +329,10 @@ export function VacatureDetailView({
                 Bewerken
               </Button>
             </a>
+            <Button size="lg" variant="outline" className="font-bold gap-2 rounded-full" onClick={handleShare}>
+              <Share2 className="h-5 w-5" />
+              Deel
+            </Button>
             <Button
               size="lg"
               variant="destructive"

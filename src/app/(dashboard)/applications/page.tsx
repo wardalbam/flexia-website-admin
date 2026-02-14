@@ -176,39 +176,42 @@ export default async function ApplicationsPage({
             </Card>
           ) : (
           applications.map((app: any) => (
-              <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="hover-lift group">
-                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <p className="font-bold text-base tracking-tight">
+              <Card key={app.id} className="hover-lift group">
+                <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <p className="font-bold text-base tracking-tight">
+                      <Link href={`/applications/${app.id}`} className="hover:underline">
                         {app.firstName} {app.lastName}
+                      </Link>
+                    </p>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {app.email} &middot; {app.phone}
+                    </p>
+                    {app.isGeneral ? (
+                      <p className="text-xs text-primary font-bold flex items-center gap-2">
+                        <Badge className="bg-purple-500/10 text-purple-700 border-purple-500/20 font-bold">
+                          Algemene sollicitatie
+                        </Badge>
                       </p>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        {app.email} &middot; {app.phone}
-                      </p>
-                      {app.isGeneral ? (
-                        <p className="text-xs text-primary font-bold flex items-center gap-2">
-                          <Badge className="bg-purple-500/10 text-purple-700 border-purple-500/20 font-bold">
-                            Algemene sollicitatie
-                          </Badge>
-                        </p>
-                      ) : app.vacature ? (
-                        <p className="text-xs text-muted-foreground font-semibold">
+                    ) : app.vacature ? (
+                      // Vacancy link: opens vacancy detail in admin
+                      <p className="text-xs text-muted-foreground font-semibold">
+                        <Link href={`/vacatures/${app.vacature.id}`} className="text-[var(--brand)] hover:underline">
                           #{app.vacature.vacatureNumber} - {app.vacature.title}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="flex items-center gap-3 flex-wrap md:flex-nowrap min-w-0">
-                      <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
-                        {statusLabels[app.status] || app.status}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-                        {new Date(app.createdAt).toLocaleDateString("nl-NL")}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                        </Link>
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap md:flex-nowrap min-w-0">
+                    <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
+                      {statusLabels[app.status] || app.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+                      {new Date(app.createdAt).toLocaleDateString("nl-NL")}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
             ))
           )}
         </div>
