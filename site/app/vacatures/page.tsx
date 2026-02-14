@@ -14,6 +14,7 @@ import {
 } from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 import { getCategoryColor } from "../../lib/status-colors";
+import { apiUrl } from "../../lib/api";
 import { AnimatedSection } from "../../components/animated-section";
 import { MapPin, Briefcase, Building2, ArrowUpRight, Search, X } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -64,8 +65,7 @@ export default function VacaturesPage() {
   useEffect(() => {
     const fetchVacatures = async () => {
       try {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
-  const res = await fetch(`${apiUrl}/api/vacatures?active=true`);
+        const res = await fetch(apiUrl(`/api/vacatures?active=true`));
         if (res.ok) {
           const data = await res.json();
           setVacatures(data);

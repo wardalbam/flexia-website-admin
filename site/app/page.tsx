@@ -9,14 +9,15 @@ import { ServiceCard } from "../components/service-card";
 import RecentVacaturesSlider from "../components/recent-vacatures-slider";
 import HeroBlobs from "../components/hero-blobs";
 
+import { apiUrl } from "../lib/api";
+
 async function getVacatures() {
   try {
-    const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "")}/api/vacatures?active=true`,
-      { cache: "no-store" }
-    );
+    const res = await fetch(apiUrl(`/api/vacatures?active=true`), { cache: "no-store" });
     if (res.ok) return await res.json();
-  } catch {}
+  } catch (err) {
+    console.error("getVacatures fetch error:", err);
+  }
   return [];
 }
 

@@ -7,9 +7,9 @@ type Params = { params: { id: string } };
 
 export default async function VacatureLanding({ params }: Params) {
   const { id } = params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
   try {
-    const res = await fetch(`${apiUrl}/api/vacatures/${id}`, { cache: "no-store" });
+    const { apiUrl: _apiUrl } = await import("../../../lib/api");
+    const res = await fetch(_apiUrl(`/api/vacatures/${id}`), { cache: "no-store" });
     if (!res.ok) {
       return (
         <div className="min-h-[60vh] flex items-center justify-center px-4">

@@ -7,6 +7,7 @@ import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { AnimatedSection } from "../../../../components/animated-section";
 import { MapPin, Briefcase, Euro, Building2, CheckCircle2, ArrowLeft, Clock, Send } from "lucide-react";
+import { apiUrl } from "../../../../lib/api";
 
 type Vacature = any;
 
@@ -30,8 +31,9 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
       }
 
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
-        const res = await fetch(`${apiUrl}/api/vacatures/${id}`);
+        // Resolve API host consistently (may be a different deploy than the frontend)
+        const { apiUrl: _apiUrl } = await import("../../../../lib/api");
+        const res = await fetch(_apiUrl(`/api/vacatures/${id}`));
         if (res.ok) setVacature(await res.json());
       } catch (error) {
         console.error("Failed to fetch vacancy:", error);
@@ -45,8 +47,7 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+      try {
       // Only include vacatureId / selectedVacatures when id is present
       const payload: any = {
         firstName,
@@ -59,7 +60,7 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
       };
       if (id) payload.vacatureId = id;
 
-      const res = await fetch(`${apiUrl}/api/applications`, {
+      const res = await fetch(apiUrl(`/api/applications`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
