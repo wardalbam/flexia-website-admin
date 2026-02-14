@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { getCategoryColor } from "@/lib/status-colors";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin, Users, Briefcase, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Vacature = any;
 
 export default function VacatureList({ initialVacatures }: { initialVacatures: Vacature[] }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
+  const prefetched = useRef(new Set<string>());
+
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
@@ -118,9 +123,7 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
               statusFilter === tab.value
                 ? "bg-primary/10 text-primary"
                 : "bg-muted text-muted-foreground"
-            )}>
-              {tab.count}
-            </span>
+            )}>{tab.count}</span>
           </button>
         ))}
       </div>
@@ -208,7 +211,45 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
             const dateAdded = v.createdAt || v.publishedAt;
 
             return (
-              <Link key={v.id} href={`/vacatures/${v.id}`} className="group h-full">
+              <Link
+                key={v.id}
+                href={`/vacatures/${v.id}`}
+                className="group h-full"
+                onMouseEnter={() => {
+                  // Prefetch the server route (RSC) and warm the vacancy API so the detail page appears instantly on click
+                  try {
+                    router.prefetch(`/vacatures/${v.id}`);
+                  } catch (e) {
+                    // ignore
+                  }
+                  // warm API cache
+                  void fetch(`/api/vacatures/${v.id}`).catch(() => {});
+                }}
+                onFocus={() => {
+                  try {
+                    router.prefetch(`/vacatures/${v.id}`);
+                  } catch (e) {}
+                  void fetch(`/api/vacatures/${v.id}`).catch(() => {});
+                }}
+                onTouchStart={() => {
+                  const id = String(v.id);
+                  if (prefetched.current.has(id)) return;
+                  prefetched.current.add(id);
+                  try {
+                    router.prefetch(`/vacatures/${v.id}`);
+                  } catch (e) {}
+                  void fetch(`/api/vacatures/${v.id}`).catch(() => {});
+                }}
+                onPointerDown={() => {
+                  const id = String(v.id);
+                  if (prefetched.current.has(id)) return;
+                  prefetched.current.add(id);
+                  try {
+                    router.prefetch(`/vacatures/${v.id}`);
+                  } catch (e) {}
+                  void fetch(`/api/vacatures/${v.id}`).catch(() => {});
+                }}
+              >
                 <Card className="relative shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer border border-border h-full flex flex-col bg-card rounded-lg overflow-hidden">
                   <CardContent className="px-4 py-3 flex-1 flex flex-col">
                     {/* Vacancy Number Badge */}
