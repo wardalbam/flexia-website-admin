@@ -11,6 +11,7 @@ import { Plus, X, Save, Archive, ArchiveRestore } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import useSWR, { mutate as globalMutate } from "swr";
 import { useSession } from "next-auth/react";
 
 type Category = {
@@ -166,6 +167,21 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       }
 
       toast.success(isEditing ? "Vacature bijgewerkt" : "Vacature aangemaakt");
+      // Optimistically update SWR cache for the vacature and vacature list
+      try {
+        if (isEditing && initialData?.id) {
+          globalMutate(`/api/vacatures/${initialData.id}`, payload, false);
+          globalMutate("/api/vacatures", (prev: any) => {
+            if (!prev) return prev;
+            return Array.isArray(prev)
+              ? prev.map((p: any) => (p.id === initialData.id ? { ...p, ...payload } : p))
+              : prev;
+          }, false);
+        } else if (!isEditing) {
+          // For new vacancy, revalidate list so it appears
+          globalMutate("/api/vacatures");
+        }
+      } catch (e) {}
       router.push("/vacatures");
       router.refresh();
     } catch (error) {

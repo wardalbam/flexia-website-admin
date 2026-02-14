@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
 import { getCategoryColor } from "@/lib/status-colors";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Edit,
   Trash2,
@@ -43,9 +44,11 @@ function getDaysOnline(publishedAt: string | Date): number {
 export function VacatureDetailView({
   initialVacature,
   allVacatures,
+  onClose,
 }: {
   initialVacature: Vacature;
   allVacatures: Vacature[];
+  onClose?: () => void;
 }) {
   const router = useRouter();
   // Track the currently selected vacancy id. SWR will provide cached
@@ -54,6 +57,7 @@ export function VacatureDetailView({
   const [isLoading, setIsLoading] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [entered, setEntered] = useState(false);
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
   // Use SWR to fetch and cache vacancy details across the admin session.
@@ -63,6 +67,11 @@ export function VacatureDetailView({
     {
       fallbackData: selectedId === initialVacature.id ? initialVacature : undefined,
       revalidateOnFocus: false,
+      // When we provide the initialVacature that matches selectedId we don't want
+      // SWR to revalidate on mount — we want to use the already-fetched data
+      // from the list to avoid extra network requests and spinners.
+      revalidateOnMount: false,
+      revalidateIfStale: false,
     }
   );
 
@@ -118,18 +127,17 @@ export function VacatureDetailView({
 
   const handleDelete = async () => {
     setDeleting(true);
+    // Optimistically remove vacancy from list cache
     try {
-  const res = await fetch(`/api/vacatures/${vacancy.id}`, {
+      globalMutate("/api/vacatures", (prev: any) => {
+        if (!prev) return prev;
+        return Array.isArray(prev) ? prev.filter((p: any) => p.id !== vacancy.id) : prev;
+      }, false);
+    } catch (e) {}
+    try {
+      const res = await fetch(`/api/vacatures/${vacancy.id}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        toast.success("Vacature verwijderd");
-        router.push("/vacatures");
-        router.refresh();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Kon vacature niet verwijderen");
-      }
     } catch {
       toast.error("Er ging iets mis bij het verwijderen");
     } finally {
@@ -162,17 +170,40 @@ export function VacatureDetailView({
   const categoryColor = getCategoryColor(vacancy.category?.name);
   const daysOnline = vacancy.publishedAt ? getDaysOnline(vacancy.publishedAt) : 0;
 
+  // Show a small skeleton for content when switching vacancies to avoid
+  // a jarring layout flash — this makes transitions feel smoother.
+  const [contentVisible, setContentVisible] = useState(true);
+  useEffect(() => {
+    // Hide content immediately, then reveal after a short delay.
+    setContentVisible(false);
+    const t = setTimeout(() => setContentVisible(true), 80);
+    return () => clearTimeout(t);
+  }, [vacancy.id]);
+
+  useEffect(() => {
+    setEntered(true);
+    return () => setEntered(false);
+  }, [vacancy.id]);
+
   return (
-    <div className="flex flex-col lg:flex-row">
-      {/* Sidebar with Vacature List - Desktop Only */}
-  <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
+    <div className={cn("flex flex-col lg:flex-row transition-transform duration-200 ease-out", entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2")}>
+      {/* Sidebar with Vacature List - Desktop Only (render only when this detail view is standalone) */}
+      {!onClose && (
+        <aside className="hidden lg:block w-80 border-r border-border bg-card overflow-y-auto">
         <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
-          <a href="/vacatures">
-            <Button variant="ghost" size="sm" className="gap-2 font-bold">
+          {onClose ? (
+            <Button variant="ghost" size="sm" className="gap-2 font-bold" onClick={onClose}>
               <ArrowLeft className="h-4 w-4" />
               Alle Vacatures
             </Button>
-          </a>
+          ) : (
+            <a href="/vacatures">
+              <Button variant="ghost" size="sm" className="gap-2 font-bold">
+                <ArrowLeft className="h-4 w-4" />
+                Alle Vacatures
+              </Button>
+            </a>
+          )}
         </div>
         <div className="p-3 space-y-2">
           {allVacatures.map((v) => {
@@ -225,7 +256,8 @@ export function VacatureDetailView({
             );
           })}
         </div>
-      </aside>
+        </aside>
+      )}
 
       {/* Main Content */}
       <main className="flex-1">
@@ -246,78 +278,103 @@ export function VacatureDetailView({
           </div>
 
           {/* Header */}
-          <div>
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
-              <Badge
-                className={cn(
-                  "rounded-full font-bold text-sm px-4 py-1.5",
-                  categoryColor.bg,
-                  categoryColor.text,
-                  "border",
-                  categoryColor.border
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <Badge
+                  className={cn(
+                    "rounded-full font-bold text-sm px-4 py-1.5",
+                    categoryColor.bg,
+                    categoryColor.text,
+                    "border",
+                    categoryColor.border
+                  )}
+                >
+                  {vacancy.category?.name}
+                </Badge>
+                {!vacancy.isActive && (
+                  <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
+                    Inactief
+                  </Badge>
                 )}
-              >
-                    {vacancy.category?.name}
-              </Badge>
-              {!vacancy.isActive && (
-                <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
-                  Inactief
-                </Badge>
-              )}
-              {vacancy.archived && (
-                <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
-                  Gearchiveerd
-                </Badge>
-              )}
-                <span className="text-xs text-muted-foreground ml-auto">
-                #{vacancy.vacatureNumber}
-              </span>
+                {vacancy.archived && (
+                  <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
+                    Gearchiveerd
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground ml-auto">#{vacancy.vacatureNumber}</span>
+              </div>
+
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-2">
+                {vacancy.title}
+              </h1>
+
+              <p className="text-lg text-muted-foreground font-medium mb-4">
+                {vacancy.subtitle}
+              </p>
+
+              {/* Compact Stats Row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative group inline-block">
+                  <a href={`/applications?vacatureId=${vacancy.id}`} className="inline-flex items-center gap-3 bg-muted/40 rounded-md px-3 py-2 text-sm">
+                    <div className="p-1 bg-muted/20 rounded">
+                      <Users className="h-4 w-4 text-foreground" />
+                    </div>
+                    <div className="leading-tight text-sm">
+                      <div className="text-base font-bold">{vacancy._count?.applications ?? 0}</div>
+                      <div className="text-xs text-muted-foreground">sollicitaties</div>
+                    </div>
+                  </a>
+
+                  {vacancy.applications && vacancy.applications.length > 0 && (
+                    <div className="absolute left-0 z-20 mt-2 w-64 bg-popover text-popover-foreground rounded-md border p-2 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
+                      <div className="text-xs text-muted-foreground mb-1">Recente sollicitanten</div>
+                      <ul className="space-y-1 max-h-40 overflow-auto">
+                        {vacancy.applications.map((a: any) => (
+                          <li key={a.id} className="text-sm">
+                            <strong className="font-semibold">{a.firstName} {a.lastName}</strong>
+                            <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString("nl-NL")}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                <div className="inline-flex items-center gap-3 bg-muted/40 rounded-md px-3 py-2 text-sm">
+                  <div className="p-1 bg-muted/20 rounded">
+                    <Calendar className="h-4 w-4 text-foreground" />
+                  </div>
+                  <div className="leading-tight text-sm">
+                    <div className="text-base font-bold">{daysOnline}</div>
+                    <div className="text-xs text-muted-foreground">dagen online</div>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground ml-auto">
+                  <MapPin className="h-4 w-4" />
+                  <span className="font-semibold">{vacancy.location || vacancy.city}</span>
+                </div>
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Euro className="h-4 w-4" />
+                  <span className="font-semibold">€{vacancy.salary}/uur</span>
+                </div>
+              </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-              {vacancy.title}
-            </h1>
-
-            <p className="text-xl text-muted-foreground font-medium mb-6">
-              {vacancy.subtitle}
-            </p>
-
-            {/* Key Metrics - Inline */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-              <a
-                href={`/applications?vacatureId=${vacancy.id}`}
-                className="flex items-center gap-2 font-bold hover:text-primary transition-colors"
-              >
-                <div className="p-2 bg-muted/50 rounded-lg">
-                  <Users className="h-4 w-4 text-foreground" />
-                </div>
-                <div>
-                  <span className="text-2xl font-black">{vacancy._count?.applications ?? 0}</span>
-                  <span className="text-muted-foreground ml-1">sollicitaties</span>
-                </div>
+            {/* Actions - compact and placed to the right */}
+            <div className="flex-shrink-0 flex items-start gap-2">
+              <a href={`/vacatures/${vacancy.id}/edit`}>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Edit className="h-4 w-4" /> Bewerken
+                </Button>
               </a>
-
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted/50 rounded-lg">
-                  <Calendar className="h-4 w-4 text-foreground" />
-                </div>
-                <div>
-                  <span className="text-2xl font-black">{daysOnline}</span>
-                  <span className="text-muted-foreground ml-1">dagen online</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">
-                  {vacancy.location || vacancy.city}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Euro className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">€{vacancy.salary}/uur</span>
-              </div>
+              <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
+                <Share2 className="h-4 w-4" /> Deel
+              </Button>
+              <Button size="sm" variant="destructive" className="gap-2" onClick={() => setDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" /> Verwijderen
+              </Button>
             </div>
           </div>
 
@@ -363,50 +420,81 @@ export function VacatureDetailView({
           </div>
 
           {/* Description */}
-          <div>
+          <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60") }>
             <h2 className="text-2xl font-black mb-3">Beschrijving</h2>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              {vacancy.description}
-            </p>
+            {contentVisible ? (
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {vacancy.description}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            )}
           </div>
 
           {/* Long Description */}
           {vacancy.longDescription && vacancy.longDescription !== vacancy.description && (
-            <div>
+            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
               <h2 className="text-2xl font-black mb-3">Meer informatie</h2>
-              <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {vacancy.longDescription}
-              </div>
+              {contentVisible ? (
+                <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {vacancy.longDescription}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              )}
             </div>
           )}
 
           {/* Requirements */}
           {vacancy.requirements?.length > 0 && (
-            <div>
+            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
               <h2 className="text-2xl font-black mb-4">Vereisten</h2>
-              <ul className="space-y-3">
-                {vacancy.requirements.map((req: string, index: number) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">{req}</span>
-                  </li>
-                ))}
-              </ul>
+              {contentVisible ? (
+                <ul className="space-y-3">
+                  {vacancy.requirements.map((req: string, index: number) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="space-y-3">
+                  <li><Skeleton className="h-4 w-full" /></li>
+                  <li><Skeleton className="h-4 w-5/6" /></li>
+                  <li><Skeleton className="h-4 w-4/6" /></li>
+                </ul>
+              )}
             </div>
           )}
 
           {/* Benefits */}
           {vacancy.benefits?.length > 0 && (
-            <div>
+            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
               <h2 className="text-2xl font-black mb-4">Wat bieden wij?</h2>
-              <ul className="space-y-3">
-                {vacancy.benefits.map((benefit: string, index: number) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <Gift className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
+              {contentVisible ? (
+                <ul className="space-y-3">
+                  {vacancy.benefits.map((benefit: string, index: number) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <Gift className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="space-y-3">
+                  <li><Skeleton className="h-4 w-full" /></li>
+                  <li><Skeleton className="h-4 w-5/6" /></li>
+                </ul>
+              )}
             </div>
           )}
 

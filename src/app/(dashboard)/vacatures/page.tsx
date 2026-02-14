@@ -1,5 +1,6 @@
 // Header is now global in RootLayout
 import VacatureList from "@/components/vacatures/VacatureList";
+import VacaturesShell from "./VacaturesShell";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { Plus } from "lucide-react";
@@ -18,6 +19,12 @@ export default async function VacaturesPage() {
     include: {
       _count: { select: { applications: true } },
       category: true,
+      // Include latest 5 applications so the admin UI can show a quick hover list
+      applications: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: { id: true, firstName: true, lastName: true, createdAt: true },
+      },
     },
   });
 
@@ -38,7 +45,7 @@ export default async function VacaturesPage() {
           </Link>
         </div>
 
-        <VacatureList initialVacatures={JSON.parse(JSON.stringify(vacatures))} />
+        <VacaturesShell initialVacatures={JSON.parse(JSON.stringify(vacatures))} />
       </div>
     </>
   );

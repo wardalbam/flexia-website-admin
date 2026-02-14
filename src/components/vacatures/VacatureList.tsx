@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +16,13 @@ import { Input } from "@/components/ui/input";
 import { getCategoryColor } from "@/lib/status-colors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import VacatureQuickView from "./VacatureQuickView";
 import { MapPin, Users, Briefcase, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Vacature = any;
 
-export default function VacatureList({ initialVacatures }: { initialVacatures: Vacature[] }) {
+export default function VacatureList({ initialVacatures, onSelect, compact = false }: { initialVacatures: Vacature[]; onSelect?: (id: string) => void; compact?: boolean }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const prefetched = useRef(new Set<string>());
@@ -96,6 +97,21 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
     const archived = initialVacatures.filter(v => v.archived).length;
     return { all, active, inactive, archived };
   }, [initialVacatures]);
+
+  const [quickId, setQuickId] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const id = e?.detail?.id;
+      if (id) {
+        setQuickId(String(id));
+        setQuickOpen(true);
+      }
+    };
+    window.addEventListener("vacature:open", handler as EventListener);
+    return () => window.removeEventListener("vacature:open", handler as EventListener);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -204,25 +220,24 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
 
       {/* Vacature Grid */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <>
+        <div className={compact ? "space-y-3" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
           {filtered.map((v) => {
             const categoryColor = getCategoryColor(v.category?.name);
             const applicationsCount = v._count?.applications ?? 0;
             const dateAdded = v.createdAt || v.publishedAt;
 
             return (
-              <Link
+              <div
                 key={v.id}
-                href={`/vacatures/${v.id}`}
                 className="group h-full"
                 onMouseEnter={() => {
-                  // Prefetch the server route (RSC) and warm the vacancy API so the detail page appears instantly on click
+                  // Prefetch the server route (RSC) and warm the vacancy API so the detail modal appears instantly on click
                   try {
                     router.prefetch(`/vacatures/${v.id}`);
                   } catch (e) {
                     // ignore
                   }
-                  // warm API cache
                   void fetch(`/api/vacatures/${v.id}`).catch(() => {});
                 }}
                 onFocus={() => {
@@ -250,7 +265,20 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
                   void fetch(`/api/vacatures/${v.id}`).catch(() => {});
                 }}
               >
-                <Card className="relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden">
+                <Card
+                  className="relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden"
+                  onClick={(e) => {
+                      // select vacancy in parent shell instead of navigating away
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onSelect) onSelect(String(v.id));
+                      // update browser URL without navigation so link remains shareable
+                      try {
+                        const newUrl = `/vacatures/${v.id}`;
+                        window.history.pushState({}, "", newUrl);
+                      } catch (e) {}
+                    }}
+                >
                   <CardContent className="px-4 py-3 flex-1 flex flex-col">
                     {/* Vacancy Number Badge */}
                     <div className="absolute top-2 right-2 bg-muted/50 text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded">
@@ -325,10 +353,12 @@ export default function VacatureList({ initialVacatures }: { initialVacatures: V
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             );
           })}
         </div>
+        <VacatureQuickView id={quickId} open={quickOpen} onOpenChange={(v) => setQuickOpen(v)} />
+        </>
       ) : (
         <div className="text-center py-16 text-muted-foreground">
           <p className="text-lg font-semibold mb-1">Geen vacatures gevonden</p>
