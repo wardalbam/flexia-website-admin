@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "../../../components/ui/badge";
+import { apiUrl } from "../../../lib/api";
 import { MapPin, Briefcase, Euro, ArrowLeft } from "lucide-react";
 import { getCategoryColor } from "../../../lib/status-colors";
 
@@ -8,8 +9,7 @@ type Params = { params: { id: string } };
 export default async function VacatureLanding({ params }: Params) {
   const { id } = params;
   try {
-    const { apiUrl: _apiUrl } = await import("../../../lib/api");
-    const res = await fetch(_apiUrl(`/api/vacatures/${id}`), { cache: "no-store" });
+    const res = await fetch(apiUrl(`/api/vacatures/${id}`), { cache: "no-store" });
     if (!res.ok) {
       return (
         <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -23,7 +23,7 @@ export default async function VacatureLanding({ params }: Params) {
       );
     }
 
-    const vacature = await res.json();
+  const vacature = await res.json();
     const categoryColor = getCategoryColor(vacature.category?.name);
 
     return (

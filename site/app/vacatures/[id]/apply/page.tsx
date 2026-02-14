@@ -32,8 +32,7 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
 
       try {
         // Resolve API host consistently (may be a different deploy than the frontend)
-        const { apiUrl: _apiUrl } = await import("../../../../lib/api");
-        const res = await fetch(_apiUrl(`/api/vacatures/${id}`));
+        const res = await fetch(apiUrl(`/api/vacatures/${id}`));
         if (res.ok) setVacature(await res.json());
       } catch (error) {
         console.error("Failed to fetch vacancy:", error);

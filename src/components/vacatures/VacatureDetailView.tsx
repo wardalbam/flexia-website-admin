@@ -65,6 +65,31 @@ export function VacatureDetailView({
     }
   );
 
+  // Provide a safe, minimal fallback object so the UI can render while
+  // SWR is fetching or when data is temporarily undefined. This prevents
+  // client-side crashes like "Cannot read properties of undefined (reading 'category')".
+  const vacancy: Vacature = selectedVacature ?? {
+    id: selectedId,
+    title: "",
+    subtitle: "",
+    description: "",
+    longDescription: "",
+    requirements: [],
+    benefits: [],
+    employmentType: [],
+    city: "",
+    location: "",
+    salary: 0,
+    isActive: false,
+    archived: false,
+    vacatureNumber: 0,
+    _count: { applications: 0 },
+    publishedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdBy: null,
+    lastUpdatedBy: null,
+  };
+
   const handleVacatureClick = async (vacatureId: string) => {
     if (vacatureId === selectedId) return;
 
@@ -93,7 +118,7 @@ export function VacatureDetailView({
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/vacatures/${selectedVacature.id}`, {
+  const res = await fetch(`/api/vacatures/${vacancy.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -112,8 +137,8 @@ export function VacatureDetailView({
     }
   };
 
-  const categoryColor = getCategoryColor(selectedVacature.category?.name);
-  const daysOnline = getDaysOnline(selectedVacature.publishedAt);
+  const categoryColor = getCategoryColor(vacancy.category?.name);
+  const daysOnline = vacancy.publishedAt ? getDaysOnline(vacancy.publishedAt) : 0;
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -129,7 +154,7 @@ export function VacatureDetailView({
         </div>
         <div className="p-3 space-y-2">
           {allVacatures.map((v) => {
-            const isActive = v.id === selectedVacature.id;
+            const isActive = v.id === vacancy.id;
             const vCategoryColor = getCategoryColor(v.category?.name);
             return (
               <button
@@ -210,42 +235,42 @@ export function VacatureDetailView({
                   categoryColor.border
                 )}
               >
-                {selectedVacature.category?.name}
+                    {vacancy.category?.name}
               </Badge>
-              {!selectedVacature.isActive && (
+              {!vacancy.isActive && (
                 <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
                   Inactief
                 </Badge>
               )}
-              {selectedVacature.archived && (
+              {vacancy.archived && (
                 <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
                   Gearchiveerd
                 </Badge>
               )}
-              <span className="text-xs text-muted-foreground ml-auto">
-                #{selectedVacature.vacatureNumber}
+                <span className="text-xs text-muted-foreground ml-auto">
+                #{vacancy.vacatureNumber}
               </span>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-              {selectedVacature.title}
+              {vacancy.title}
             </h1>
 
             <p className="text-xl text-muted-foreground font-medium mb-6">
-              {selectedVacature.subtitle}
+              {vacancy.subtitle}
             </p>
 
             {/* Key Metrics - Inline */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
               <a
-                href={`/applications?vacatureId=${selectedVacature.id}`}
+                href={`/applications?vacatureId=${vacancy.id}`}
                 className="flex items-center gap-2 font-bold hover:text-primary transition-colors"
               >
                 <div className="p-2 bg-muted/50 rounded-lg">
                   <Users className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
-                  <span className="text-2xl font-black">{selectedVacature._count.applications}</span>
+                  <span className="text-2xl font-black">{vacancy._count?.applications ?? 0}</span>
                   <span className="text-muted-foreground ml-1">sollicitaties</span>
                 </div>
               </a>
@@ -263,20 +288,20 @@ export function VacatureDetailView({
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span className="font-semibold">
-                  {selectedVacature.location || selectedVacature.city}
+                  {vacancy.location || vacancy.city}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
                 <Euro className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">€{selectedVacature.salary}/uur</span>
+                <span className="font-semibold">€{vacancy.salary}/uur</span>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <a href={`/vacatures/${selectedVacature.id}/edit`}>
+            <a href={`/vacatures/${vacancy.id}/edit`}>
               <Button size="lg" className="font-bold gap-2 rounded-full">
                 <Edit className="h-5 w-5" />
                 Bewerken
@@ -300,7 +325,7 @@ export function VacatureDetailView({
               <h2 className="text-lg font-bold">Dienstverband</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {selectedVacature.employmentType.map((type: string) => (
+              {vacancy.employmentType.map((type: string) => (
                 <Badge
                   key={type}
                   className="bg-muted text-foreground border border-border px-4 py-1.5 text-sm font-semibold"
@@ -315,26 +340,26 @@ export function VacatureDetailView({
           <div>
             <h2 className="text-2xl font-black mb-3">Beschrijving</h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              {selectedVacature.description}
+              {vacancy.description}
             </p>
           </div>
 
           {/* Long Description */}
-          {selectedVacature.longDescription && selectedVacature.longDescription !== selectedVacature.description && (
+          {vacancy.longDescription && vacancy.longDescription !== vacancy.description && (
             <div>
               <h2 className="text-2xl font-black mb-3">Meer informatie</h2>
               <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {selectedVacature.longDescription}
+                {vacancy.longDescription}
               </div>
             </div>
           )}
 
           {/* Requirements */}
-          {selectedVacature.requirements?.length > 0 && (
+          {vacancy.requirements?.length > 0 && (
             <div>
               <h2 className="text-2xl font-black mb-4">Vereisten</h2>
               <ul className="space-y-3">
-                {selectedVacature.requirements.map((req: string, index: number) => (
+                {vacancy.requirements.map((req: string, index: number) => (
                   <li key={index} className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-foreground mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">{req}</span>
@@ -345,11 +370,11 @@ export function VacatureDetailView({
           )}
 
           {/* Benefits */}
-          {selectedVacature.benefits?.length > 0 && (
+          {vacancy.benefits?.length > 0 && (
             <div>
               <h2 className="text-2xl font-black mb-4">Wat bieden wij?</h2>
               <ul className="space-y-3">
-                {selectedVacature.benefits.map((benefit: string, index: number) => (
+                {vacancy.benefits.map((benefit: string, index: number) => (
                   <li key={index} className="flex items-start gap-3">
                     <Gift className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">{benefit}</span>
@@ -365,7 +390,7 @@ export function VacatureDetailView({
               <span>
                 Gepubliceerd:{" "}
                 <strong className="text-foreground">
-                  {new Date(selectedVacature.publishedAt).toLocaleDateString("nl-NL", {
+                  {new Date(vacancy.publishedAt).toLocaleDateString("nl-NL", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
@@ -375,7 +400,7 @@ export function VacatureDetailView({
               <span>
                 Laatst bijgewerkt:{" "}
                 <strong className="text-foreground">
-                  {new Date(selectedVacature.updatedAt).toLocaleDateString("nl-NL", {
+                  {new Date(vacancy.updatedAt).toLocaleDateString("nl-NL", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
@@ -384,19 +409,19 @@ export function VacatureDetailView({
               </span>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {selectedVacature.createdBy && (
+              {vacancy.createdBy && (
                 <span>
                   Aangemaakt door:{" "}
                   <strong className="text-foreground">
-                    {selectedVacature.createdBy.name || selectedVacature.createdBy.email}
+                    {vacancy.createdBy.name || vacancy.createdBy.email}
                   </strong>
                 </span>
               )}
-              {selectedVacature.lastUpdatedBy && (
+              {vacancy.lastUpdatedBy && (
                 <span>
                   Laatst bewerkt door:{" "}
                   <strong className="text-foreground">
-                    {selectedVacature.lastUpdatedBy.name || selectedVacature.lastUpdatedBy.email}
+                    {vacancy.lastUpdatedBy.name || vacancy.lastUpdatedBy.email}
                   </strong>
                 </span>
               )}
@@ -411,7 +436,7 @@ export function VacatureDetailView({
           <DialogHeader>
             <DialogTitle>Vacature verwijderen</DialogTitle>
             <DialogDescription>
-              Weet je zeker dat je <strong>&ldquo;{selectedVacature.title}&rdquo;</strong> wilt
+              Weet je zeker dat je <strong>&ldquo;{vacancy.title}&rdquo;</strong> wilt
               verwijderen? Dit kan niet ongedaan worden gemaakt. Alle gekoppelde
               sollicitaties verliezen hun vacature-referentie.
             </DialogDescription>

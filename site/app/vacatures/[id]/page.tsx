@@ -14,6 +14,7 @@ import {
   Share2,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { apiUrl } from "../../../lib/api";
 import { AnimatedSection } from "../../../components/animated-section";
 
 type Vacature = {
@@ -62,13 +63,10 @@ const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
 
 async function getVacature(id: string): Promise<Vacature | null> {
   try {
-    // Prefer explicit frontend-configured API URL. If not set,
-    // fall back to Vercel-provided URL on server, otherwise use a
-    // relative request so the same origin is used (works in dev and
-    // production when front and API are co-hosted).
-    const configured = process.env.NEXT_PUBLIC_API_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
-    const base = configured ? configured.replace(/\/$/, "") : "";
-    const fetchUrl = base ? `${base}/api/vacatures/${id}` : `/api/vacatures/${id}`;
+    // Resolve API URL via helper so the same logic is used across the
+    // site. This prefers NEXT_PUBLIC_API_URL, falls back to a known
+    // production admin host, then VERCEL_URL, then relative paths.
+    const fetchUrl = apiUrl(`/api/vacatures/${id}`);
 
     const res = await fetch(fetchUrl, {
       next: { revalidate: 60 },
