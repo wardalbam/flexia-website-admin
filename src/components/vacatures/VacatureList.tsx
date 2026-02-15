@@ -276,13 +276,17 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                     isSelected ? "ring-2 ring-[var(--brand)] bg-[var(--brand)]/5" : ""
                   )}
                   onClick={(e) => {
-                      // On small screens, open the quick-view dialog (full-screen) instead of switching the split shell
+                      // On small screens, navigate to the vacancy overview page instead of opening the quick-view dialog
                       try {
                         const isMobile = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
                         if (isMobile) {
-                          // open quick view modal for mobile
-                          setQuickId(String(v.id));
-                          setQuickOpen(true);
+                          // navigate to the vacancy page (full overview) on mobile
+                          try {
+                            router.push(`/vacatures/${v.id}`);
+                          } catch (err) {
+                            // fallback to location.assign
+                            window.location.href = `/vacatures/${v.id}`;
+                          }
                           return;
                         }
                       } catch (err) {}

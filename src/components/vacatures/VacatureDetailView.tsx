@@ -391,28 +391,7 @@ export function VacatureDetailView({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            <a href={`/vacatures/${vacancy.id}/edit`}>
-              <Button size="lg" className="font-bold gap-2 rounded-full">
-                <Edit className="h-5 w-5" />
-                Bewerken
-              </Button>
-            </a>
-            <Button size="lg" variant="outline" className="font-bold gap-2 rounded-full" onClick={handleShare}>
-              <Share2 className="h-5 w-5" />
-              Deel
-            </Button>
-            <Button
-              size="lg"
-              variant="destructive"
-              className="font-bold gap-2 rounded-full"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="h-5 w-5" />
-              Verwijderen
-            </Button>
-          </div>
+          {/* Note: large action buttons removed to avoid duplication; actions are available in the header */}
 
           {/* Dienstverband */}
           <div>
