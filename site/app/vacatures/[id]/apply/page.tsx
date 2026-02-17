@@ -6,7 +6,7 @@ import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { AnimatedSection } from "../../../../components/animated-section";
-import { MapPin, Briefcase, Euro, Building2, CheckCircle2, ArrowLeft, Clock, Send } from "lucide-react";
+import { MapPin, Briefcase, Euro, Building2, CheckCircle2, ArrowLeft, Clock, Send, MessageCircle } from "lucide-react";
 import { apiUrl } from "../../../../lib/api";
 
 type Vacature = any;
@@ -308,7 +308,18 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
                         </>
                       )}
                     </Button>
+
                   </form>
+
+                  <a
+                    href={`https://wa.me/31682712876?text=${encodeURIComponent(`Hallo, ik wil graag solliciteren op vacature #${vacature.vacatureNumber} - ${vacature.title}.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full rounded-full h-12 text-base font-semibold border border-border text-foreground hover:bg-secondary transition-colors duration-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Of solliciteer via WhatsApp
+                  </a>
 
                   <div className="pt-5 border-t border-border flex items-center gap-3 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 shrink-0" />

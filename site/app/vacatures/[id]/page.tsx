@@ -12,6 +12,7 @@ import {
   Clock,
   Calendar,
   Share2,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { apiUrl } from "../../../lib/api";
@@ -348,6 +349,16 @@ export default async function VacatureDetailPage({
                     </Link>
                   </Button>
 
+                  <a
+                    href={`https://wa.me/31682712876?text=${encodeURIComponent(`Hallo, ik wil graag solliciteren op vacature #${vacature.vacatureNumber} - ${vacature.title}.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full rounded-full h-12 text-base font-semibold border border-border text-foreground hover:bg-secondary transition-colors duration-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Of solliciteer via WhatsApp
+                  </a>
+
                   <div className="pt-4 border-t border-border flex items-center gap-3 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 shrink-0" />
                     <span>Wij reageren binnen 24 uur</span>
@@ -439,12 +450,15 @@ export default async function VacatureDetailPage({
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button
-                asChild
-                className="rounded-full px-8 py-3 text-base font-semibold border-white/20 text-white hover:bg-white/10 bg-transparent"
+              <a
+                href={`https://wa.me/31682712876?text=${encodeURIComponent(`Hallo, ik wil graag solliciteren op vacature #${vacature.vacatureNumber} - ${vacature.title}.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 text-base font-semibold border border-white/20 text-white hover:bg-white/10 transition-colors duration-300"
               >
-                <Link href="/vacatures">Alle vacatures bekijken</Link>
-              </Button>
+                <MessageCircle className="h-4 w-4" />
+                Of via WhatsApp
+              </a>
             </div>
           </AnimatedSection>
         </div>
