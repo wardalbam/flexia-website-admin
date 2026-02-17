@@ -95,7 +95,7 @@ export default function IkZoekWerkPage() {
             <AnimatedSection animation="slide-right">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5">
                 <Image
-                  src="/images/personeel-banner.png"
+                  src="/images/bartender.png"
                   alt="Flexibel werken in de horeca"
                   fill
                   className="object-cover"
@@ -173,7 +173,7 @@ export default function IkZoekWerkPage() {
             <AnimatedSection animation="slide-left">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white">
                 <Image
-                  src="/images/personeel-banner.png"
+                  src="/images/female-chef-putting-glove-kitchen-BU66W3y4.webp"
                   alt="Werken bij Flexia"
                   fill
                   className="object-cover"
