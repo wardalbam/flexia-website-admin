@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/vacatures", label: "Vacatures" },
   { href: "/ik-zoek-werk", label: "Ik zoek werk" },
-  { href: "/ik-zoek-personeel", label: "Ik zoek personeel" },
+  { href: "/vind-personeel", label: "Ik zoek personeel" },
   { href: "/solliciteer", label: "Solliciteer" },
 ];
 
@@ -62,7 +62,7 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         scrolled
-          ? "glass shadow-layered py-3"
+          ? "bg-white shadow-layered py-3"
           : mobileOpen
             ? heroDark
               ? "glass-dark py-3"
@@ -73,18 +73,21 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         <div className="flex items-center justify-between">
           {/* Logo — typographic only */}
-          <Link href="/" className="group flex items-baseline">
-            <span
-              className={cn(
-                "text-[1.35rem] font-bold tracking-tight transition-colors duration-500 group-hover:opacity-80",
-                lightText ? "text-white" : "text-foreground"
-              )}
-            >
-              flexia
-            </span>
-            <span className="text-[1.35rem] font-bold" style={{ color: "var(--brand)" }}>
-              .
-            </span>
+          <Link href="/" className="group flex items-center gap-2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2540.25 1894.5" className={cn("h-7 w-7 transition-colors duration-500", lightText ? "text-white" : "text-foreground")}><path fill="currentColor" d="M 9.543 6.477 L 2531.781 6.477 L 2531.781 630.469 L 1265.313 630.469 C 1265.313 630.469 1278.371 796.969 1399.145 887.035 C 1495.582 958.953 1624.922 950.238 1624.922 950.238 L 2531.781 950.238 L 2531.781 1560.828 L 1668.27 1560.828 C 1668.27 1560.828 1319.551 1583.348 1052.699 1398.273 C 692.688 1148.598 653.707 719.285 653.707 719.285 L 653.707 1888.613 L 9.543 1888.613 Z"/></svg>
+            <div className="flex items-baseline">
+              <span
+                className={cn(
+                  "text-[1.35rem] font-bold tracking-tight transition-colors duration-500 group-hover:opacity-80",
+                  lightText ? "text-white" : "text-foreground"
+                )}
+              >
+                flexia
+              </span>
+              <span className="text-[1.35rem] font-bold" style={{ color: "var(--brand)" }}>
+                .
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

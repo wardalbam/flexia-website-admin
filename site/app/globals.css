@@ -175,6 +175,7 @@
   }
   h1, h2, h3, h4 {
     @apply tracking-tight;
+    font-family: 'Glock Grotesk 2.0', var(--font-sans, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial);
     text-wrap: balance;
   }
   ::selection {

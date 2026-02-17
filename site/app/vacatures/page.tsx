@@ -107,12 +107,9 @@ export default function VacaturesPage() {
 
   return (
     <>
-      {/* ========== HERO — Dark surface with mesh blob ========== */}
-      <section className="relative surface-dark overflow-hidden py-24 md:py-32">
-        <div className="mesh-blob mesh-brand w-[700px] h-[700px] -top-32 -right-32 animate-mesh opacity-50" />
-        <div className="mesh-blob mesh-brand w-[400px] h-[400px] bottom-0 -left-20 animate-mesh opacity-30" style={{ animationDelay: "-10s" }} />
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center space-y-6">
+      {/* ========== HERO ========== */}
+      <section className="surface-dark py-24 md:py-32">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center space-y-6">
           <AnimatedSection>
             <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--brand)]">
               Vacatures
@@ -131,9 +128,6 @@ export default function VacaturesPage() {
             </p>
           </AnimatedSection>
         </div>
-
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[var(--background)] to-transparent z-10" />
       </section>
 
       {/* ========== FILTERS + CONTENT ========== */}

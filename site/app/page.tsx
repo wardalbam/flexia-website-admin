@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Phone, Mail, MessageCircle } from "lucide-react";
+import { ArrowRight, Phone, Mail, MessageCircle, ShieldCheck, Zap, Smile, Repeat } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { AnimatedSection } from "../components/animated-section";
 import { Marquee } from "../components/marquee";
 import { SectionHeading } from "../components/section-heading";
-import { StatCard } from "../components/stat-card";
 import { ServiceCard } from "../components/service-card";
 import RecentVacaturesSlider from "../components/recent-vacatures-slider";
+import { AboutImage } from "../components/about-image";
+import { CategoryCards } from "../components/category-cards";
 
 import { apiUrl } from "../lib/api";
 
@@ -26,59 +27,76 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ========== HERO — compact, bold, accent with layered artful background ========== */}
-      <section className="relative py-20 md:py-28 flex items-center overflow-hidden" data-header-theme="dark">
-          {/* Decorative layered background: subtle image + SVG blobs + gradient overlay */}
-          <div
-            aria-hidden
-            className="absolute inset-0 -z-20 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(8,7,23,0.5), rgba(8,7,23,0.45)), url('https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=1600&q=80&auto=format&fit=crop')",
-            }}
-          />
+      {/* ========== HERO ========== */}
+      <section
+        className="relative w-full h-screen overflow-hidden"
+        aria-labelledby="hero-heading"
+        data-header-theme="dark"
+      >
+        {/* Background image */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+          style={{ backgroundImage: `url('/images/personeel-banner.png')` }}
+        />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 w-full">
-          <div className="max-w-3xl space-y-6">
-            <AnimatedSection>
-              {count > 0 && (
-                <div className="inline-flex items-center gap-3 text-sm text-muted-foreground border border-border rounded-full px-4 py-1">
-                  <span className="w-2 h-2 rounded-full bg-[var(--brand)] animate-pulse" />
-                  {count} open vacatures
-                </div>
-              )}
-            </AnimatedSection>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
 
-            <AnimatedSection delay={0.05}>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-foreground leading-tight">
-                De flexibele kracht
+        {/* Content — editorial bottom-aligned layout */}
+        <div className="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 lg:px-8 pb-12 md:pb-20">
+          {/* Badge */}
+          {count > 0 && (
+            <div className="inline-flex items-center gap-3 text-sm text-white/60 border border-white/15 px-4 py-1.5 mb-8 w-fit backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-[var(--brand)] animate-pulse" />
+              {count} open vacatures
+            </div>
+          )}
+
+          {/* Grid: heading left, sub + CTAs right */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+            {/* Heading */}
+            <div className="lg:col-span-7">
+              <h1
+                id="hero-heading"
+                className="font-black text-white leading-[0.9] tracking-[-0.03em] text-[clamp(3.5rem,11vw,9rem)]"
+              >
+                Gastvrij
                 <br />
-                achter jouw <span className="text-[var(--brand)]">horeca</span>
+                <span className="text-[var(--brand)]">&</span> direct
+                <br />
+                inzetbaar.
               </h1>
-            </AnimatedSection>
+            </div>
 
-            <AnimatedSection delay={0.15}>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-snug font-medium">
-                Werk wanneer jij wilt, personeel wanneer jij het nodig hebt — snel, betrouwbaar en met een glimlach.
+            {/* Subheading + CTAs */}
+            <div className="lg:col-span-5 flex flex-col gap-6 lg:pb-2">
+              <p className="text-base md:text-lg text-white/60 leading-relaxed max-w-md">
+                Krachtige matches tussen flexwerkers en horecazaken.
+                Snelle beschikbaarheid, heldere communicatie.
               </p>
-            </AnimatedSection>
 
-            <AnimatedSection delay={0.25}>
-              <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                <Button asChild size="lg" variant="brand" className="rounded-full px-7 py-3 text-base font-semibold shadow-md">
-                  <Link href="/vacatures">
-                    Bekijk vacatures
-                    <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-full px-7 py-3 text-base font-semibold border border-border text-foreground hover:bg-[var(--brand)]/6">
-                  <Link href="#werkgevers">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/vacatures" className="inline-flex">
+                  <Button
+                    size="lg"
+                    className="px-8 py-3 text-base font-bold bg-[var(--brand)] text-white hover:bg-[var(--brand-dark)] transition-colors"
+                  >
+                    Ik zoek werk
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/vind-personeel" className="inline-flex">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="px-8 py-3 text-base font-bold border-white/30 text-white bg-white/10 hover:bg-white/20 transition-colors"
+                  >
                     Ik zoek personeel
-                    <ArrowUpRight className="ml-2 h-5 w-5 transition-transform duration-300" />
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </div>
-            </AnimatedSection>
+            </div>
           </div>
         </div>
       </section>
@@ -87,107 +105,205 @@ export default async function HomePage() {
       <Marquee />
 
       {/* ========== DUAL PANEL — Werknemers & Werkgevers ========== */}
-      <section className="py-24 md:py-40">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-2">
-            {/* Werknemers */}
-            <AnimatedSection animation="slide-left">
-              <div className="group relative bg-secondary rounded-lg p-10 md:p-14 h-full transition-all duration-500 hover:shadow-layered">
-                <div className="space-y-6">
-                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--brand)]">
-                    Werknemers
-                  </span>
-                  <h3 className="text-heading font-bold">
-                    Werken wanneer jij wilt?
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    Bij Flexia Jobs bepaal jij wanneer je werkt. Je komt terecht bij de mooiste
-                    evenementen en gezelligste horecazaken. En het belangrijkste: je krijgt gewoon
-                    eerlijk betaald.
-                  </p>
-                  <div className="pt-4">
-                    <Link
-                      href="/vacatures"
-                      className="inline-flex items-center gap-2 text-sm font-medium animated-underline group/link"
-                    >
-                      Bekijk vacatures
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </AnimatedSection>
+      <section className="grid lg:grid-cols-2 min-h-[70vh]">
+        {/* Werknemers — light panel */}
+        <AnimatedSection animation="slide-left" className="h-full">
+          <Link href="/vacatures" className="group relative flex flex-col justify-between h-full bg-[var(--surface-light)] p-10 md:p-16 lg:p-20 overflow-hidden cursor-pointer transition-colors duration-500 hover:bg-secondary">
+            {/* Decorative large number */}
+            <span
+              aria-hidden
+              className="absolute -right-6 -top-10 text-[clamp(10rem,20vw,18rem)] font-black leading-none text-black/[0.03] select-none transition-transform duration-700 group-hover:translate-x-3 group-hover:-translate-y-3"
+            >
+              01
+            </span>
 
-            {/* Werkgevers */}
-            <AnimatedSection animation="slide-right" id="werkgevers">
-              <div className="group relative surface-dark rounded-lg p-10 md:p-14 h-full transition-all duration-500 hover:shadow-layered-dark">
-                <div className="space-y-6">
-                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--brand)]">
-                    Werkgevers
-                  </span>
-                  <h3 className="text-heading font-bold text-white">
-                    Personeel op afroep.
-                  </h3>
-                  <p className="text-white/50 leading-relaxed text-lg">
-                    Flexia Jobs levert niet zomaar handjes, wij leveren gastvrijheid.
-                    Onze poule bestaat uit geselecteerde, gemotiveerde krachten die
-                    direct inzetbaar zijn.
-                  </p>
-                  <div className="pt-4">
-                    <Link
-                      href="/solliciteer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-white animated-underline group/link"
-                    >
-                      Neem contact op
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* ========== DIVIDER ========== */}
-      <hr className="section-divider mx-auto max-w-7xl" />
-
-      {/* ========== DIENSTEN ========== */}
-      <section className="py-24 md:py-40">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
-            {/* Left: heading */}
-            <div className="lg:sticky lg:top-32 lg:self-start space-y-6">
-              <SectionHeading
-                badge="Onze diensten"
-                title="Het horeca uitzendbureau"
-                description="Bij Flexia Jobs verbinden we jongeren die willen werken met horeca bedrijven die snel versterking nodig hebben. Snel, betrouwbaar en altijd met een glimlach."
-                align="left"
-              />
+            {/* Top: badge */}
+            <div>
+              <span className="inline-block text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand)] border border-[var(--brand)]/20 px-3 py-1">
+                Werknemers
+              </span>
             </div>
 
-            {/* Right: services */}
+            {/* Middle: content */}
+            <div className="relative z-10 mt-12 md:mt-20 space-y-5 max-w-lg">
+              <h3 className="text-display font-bold text-foreground">
+                Jouw volgende
+                <br />
+                shift wacht.
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-lg">
+                Bij Flexia Jobs bepaal jij wanneer je werkt. Je komt terecht bij de mooiste
+                evenementen en gezelligste horecazaken. En het belangrijkste: je krijgt
+                eerlijk betaald.
+              </p>
+            </div>
+
+            {/* Bottom: CTA arrow */}
+            <div className="relative z-10 mt-10 flex items-center gap-3">
+              <span className="text-sm font-bold uppercase tracking-[0.15em] text-foreground">
+                Bekijk vacatures
+              </span>
+              <div className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center transition-all duration-500 group-hover:bg-foreground group-hover:border-foreground">
+                <ArrowRight className="h-4 w-4 text-foreground transition-all duration-500 group-hover:text-white group-hover:translate-x-0.5" />
+              </div>
+            </div>
+          </Link>
+        </AnimatedSection>
+
+        {/* Werkgevers — dark panel */}
+        <AnimatedSection animation="slide-right" id="werkgevers" className="h-full">
+          <Link href="/vind-personeel" className="group relative flex flex-col justify-between h-full surface-dark p-10 md:p-16 lg:p-20 overflow-hidden cursor-pointer transition-colors duration-500 hover:bg-[#111]">
+            {/* Decorative large number */}
+            <span
+              aria-hidden
+              className="absolute -right-6 -top-10 text-[clamp(10rem,20vw,18rem)] font-black leading-none text-white/[0.03] select-none transition-transform duration-700 group-hover:translate-x-3 group-hover:-translate-y-3"
+            >
+              02
+            </span>
+
+            {/* Top: badge */}
             <div>
+              <span className="inline-block text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand)] border border-[var(--brand)]/20 px-3 py-1">
+                Werkgevers
+              </span>
+            </div>
+
+            {/* Middle: content */}
+            <div className="relative z-10 mt-12 md:mt-20 space-y-5 max-w-lg">
+              <h3 className="text-display font-bold text-white">
+                Jouw team,
+                <br />
+                direct compleet.
+              </h3>
+              <p className="text-white/50 leading-relaxed text-lg">
+                Flexia Jobs levert niet zomaar handjes, wij leveren gastvrijheid.
+                Onze poule bestaat uit geselecteerde, gemotiveerde krachten die
+                direct inzetbaar zijn.
+              </p>
+            </div>
+
+            {/* Bottom: CTA arrow */}
+            <div className="relative z-10 mt-10 flex items-center gap-3">
+              <span className="text-sm font-bold uppercase tracking-[0.15em] text-white">
+                Personeel aanvragen
+              </span>
+              <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center transition-all duration-500 group-hover:bg-white group-hover:border-white">
+                <ArrowRight className="h-4 w-4 text-white transition-all duration-500 group-hover:text-black group-hover:translate-x-0.5" />
+              </div>
+            </div>
+          </Link>
+        </AnimatedSection>
+      </section>
+
+      {/* ========== OVER ONS ========== */}
+      <section className="py-24 md:py-40 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-6 items-center">
+            {/* Image — offset with tilt-on-hover */}
+            <AnimatedSection animation="slide-left" className="lg:col-span-5">
+              <div className="relative">
+                {/* Decorative brand accent block */}
+                <div
+                  aria-hidden
+                  className="absolute -bottom-4 -left-4 w-full h-full bg-[var(--brand)]/10 -z-10"
+                />
+                <AboutImage
+                  src="/images/catering-staff-agency-B1T9L3ZT.webp"
+                  alt="Het Flexia Jobs team"
+                />
+              </div>
+            </AnimatedSection>
+
+            {/* Text — right column, staggered layout */}
+            <div className="lg:col-span-6 lg:col-start-7 space-y-8">
               <AnimatedSection>
-                <ServiceCard number="01" title="Flex personeel" description="Direct inzetbare medewerkers voor jouw horecabedrijf. Flexibel, betrouwbaar en altijd gemotiveerd." />
-                <ServiceCard number="02" title="Matching en facturatie" description="Wij matchen de juiste mensen met de juiste werkplek en regelen de volledige administratie." />
-                <ServiceCard number="03" title="Evenementen personeel" description="Van festivals tot bedrijfsfeesten — wij leveren professioneel personeel voor elk evenement." />
-                <ServiceCard number="04" title="Werving & Selectie" description="Op zoek naar vast personeel? Wij selecteren de beste kandidaten voor jouw team." />
+                <span className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand)]">
+                  Over Flexia Jobs
+                </span>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.05}>
+                <h2 className="text-display font-bold text-foreground">
+                  Wij verbinden
+                  <br />
+                  <span className="text-[var(--brand)]">talent</span> met horeca.
+                </h2>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.1}>
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+                  Flexia Jobs is opgericht met één doel: de horeca voorzien van
+                  betrouwbaar, gastvrij personeel. Wij geloven dat goed personeel
+                  het verschil maakt — voor de zaak én voor de gast.
+                </p>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.15}>
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+                  Of je nu een druk restaurant runt of een groot evenement
+                  organiseert, wij zorgen voor de juiste mensen op het juiste
+                  moment.
+                </p>
+              </AnimatedSection>
+
+              {/* Value cards */}
+              <AnimatedSection delay={0.2}>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  {[
+                    { icon: ShieldCheck, label: "Betrouwbaar", desc: "Altijd op tijd, altijd geregeld" },
+                    { icon: Zap, label: "Snel schakelen", desc: "Vandaag nodig, vandaag geregeld" },
+                    { icon: Smile, label: "Gastvrij", desc: "Service met een glimlach" },
+                    { icon: Repeat, label: "Flexibel", desc: "Mee met jouw planning" },
+                  ].map(({ icon: Icon, label, desc }) => (
+                    <div
+                      key={label}
+                      className="group/card relative p-5 border border-border bg-white overflow-hidden transition-all duration-500 hover:border-[var(--brand)] hover:shadow-layered cursor-default"
+                    >
+                      <div className="absolute inset-0 bg-[var(--brand)]/5 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" />
+                      <div className="relative z-10 flex flex-col gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-[var(--brand)]/10 flex items-center justify-center transition-colors duration-500 group-hover/card:bg-[var(--brand)]/20">
+                          <Icon className="h-4 w-4 text-[var(--brand)]" />
+                        </div>
+                        <span className="text-sm font-bold text-foreground">{label}</span>
+                        <span className="text-xs text-muted-foreground leading-relaxed">{desc}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </AnimatedSection>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ========== STATS — Dark band ========== */}
-      <section className="surface-dark py-20 md:py-28 relative overflow-hidden">
-        <div className="mesh-blob mesh-brand w-[600px] h-[600px] -top-40 left-1/4 opacity-30" />
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            <AnimatedSection><StatCard number="500+" label="Flexwerkers ingezet" /></AnimatedSection>
-            <AnimatedSection delay={0.1}><StatCard number="50+" label="Horecapartners" /></AnimatedSection>
-            <AnimatedSection delay={0.2}><StatCard number="24/7" label="Bereikbaar" /></AnimatedSection>
-            <AnimatedSection delay={0.3}><StatCard number="98%" label="Tevredenheid" /></AnimatedSection>
+      {/* ========== DIENSTEN ========== */}
+      <section className="py-24 md:py-40 surface-darker">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+            {/* Left: heading */}
+            <div className="lg:sticky lg:top-32 lg:self-start space-y-6">
+              <AnimatedSection className="space-y-5">
+                <span className="inline-block font-mono text-xs uppercase tracking-[0.2em] text-[var(--brand)]">
+                  Onze diensten
+                </span>
+                <h2 className="text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.95] font-bold text-white">
+                  Het horeca uitzendbureau
+                </h2>
+                <p className="text-lg leading-relaxed text-white/50">
+                  Bij Flexia Jobs verbinden we jongeren die willen werken met horeca bedrijven die snel versterking nodig hebben. Snel, betrouwbaar en altijd met een glimlach.
+                </p>
+              </AnimatedSection>
+            </div>
+
+            {/* Right: services */}
+            <div>
+              <AnimatedSection>
+                <ServiceCard dark number="01" title="Flex personeel" description="Direct inzetbare medewerkers voor jouw horecabedrijf. Flexibel, betrouwbaar en altijd gemotiveerd." />
+                <ServiceCard dark number="02" title="Matching en facturatie" description="Wij matchen de juiste mensen met de juiste werkplek en regelen de volledige administratie." />
+                <ServiceCard dark number="03" title="Evenementen personeel" description="Van festivals tot bedrijfsfeesten — wij leveren professioneel personeel voor elk evenement." />
+                <ServiceCard dark number="04" title="Werving & Selectie" description="Op zoek naar vast personeel? Wij selecteren de beste kandidaten voor jouw team." />
+              </AnimatedSection>
+            </div>
           </div>
         </div>
       </section>
@@ -201,33 +317,9 @@ export default async function HomePage() {
             description="Kies uit onze populairste categorieën en vind de perfecte baan."
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { title: "Catering & Party", description: "Werk op feesten, events en partijen waar altijd wat te doen is." },
-              { title: "Spoelkeuken", description: "Zorg jij dat alles in de keuken blijft draaien? Simpel werk, flexibele shifts." },
-              { title: "Keukenhulp", description: "Werk mee in de keuken en zorg dat alles soepel loopt achter de schermen." },
-              { title: "Bediening", description: "Leuke uitdagende baan in de bediening in een Horeca bedrijf." },
-            ].map((cat, i) => (
-              <AnimatedSection key={cat.title} delay={i * 0.1}>
-                <Link href="/vacatures">
-                  <div className="group relative bg-secondary rounded-lg p-8 h-full transition-all duration-500 hover:bg-foreground hover:text-background cursor-pointer">
-                    <div className="space-y-4">
-                      <span className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--brand)]">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <h3 className="text-lg font-bold">{cat.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/50 transition-colors duration-500">
-                        {cat.description}
-                      </p>
-                      <div className="pt-2">
-                        <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-all duration-500 group-hover:text-[var(--brand)] group-hover:translate-x-1 group-hover:-translate-y-1" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </AnimatedSection>
-            ))}
-          </div>
+          <AnimatedSection>
+            <CategoryCards />
+          </AnimatedSection>
         </div>
       </section>
 

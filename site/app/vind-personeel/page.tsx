@@ -20,7 +20,7 @@ export const metadata = {
     title: "Ik zoek personeel — Flexia",
     description:
       "Vind betrouwbaar horecapersoneel op afroep. Flexia levert geselecteerde, gemotiveerde krachten voor uw zaak of evenement.",
-    url: "https://www.flexiajobs.nl/ik-zoek-personeel",
+    url: "https://www.flexiajobs.nl/vind-personeel",
     siteName: "Flexia",
     type: "website",
   },
