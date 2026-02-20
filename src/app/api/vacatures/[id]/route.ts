@@ -3,19 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
-// Allowed origins for CORS (site app)
-const SITE_ORIGIN = process.env.SITE_ORIGIN || "http://localhost:3001";
-const DEV_ORIGINS = [
-  "http://localhost:3001",
-  "http://127.0.0.1:3001",
-];
+// Allowed origins for CORS (comma-separated env var)
+const ALLOWED_ORIGINS = (
+  process.env.ALLOWED_ORIGINS || "https://flexiajobs.nl,https://www.flexiajobs.nl,http://localhost:3000,http://localhost:3001"
+).split(",").map((o) => o.trim());
 
 function isOriginAllowed(origin: string | null) {
   if (!origin) return false;
-  if (process.env.NODE_ENV === "development") {
-    return DEV_ORIGINS.includes(origin) || origin === SITE_ORIGIN;
-  }
-  return origin === SITE_ORIGIN;
+  return ALLOWED_ORIGINS.includes(origin);
 }
 
 const vacatureSchema = z.object({

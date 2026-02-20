@@ -3,25 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
-// Allowed frontend origins. In production you should set FRONTEND_ORIGIN to
-// https://flexiajobs.nl (or whatever your public site is). During
-// development we accept localhost origins so local frontends can post.
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://flexiajobs.nl";
-const DEV_LOCAL_ORIGINS = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3001",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-];
+// Allowed frontend origins for CORS (comma-separated env var)
+const ALLOWED_ORIGINS = (
+  process.env.ALLOWED_ORIGINS || "https://flexiajobs.nl,https://www.flexiajobs.nl,http://localhost:3000,http://localhost:3001"
+).split(",").map((o) => o.trim());
 
 function isOriginAllowed(origin: string | null) {
   if (!origin) return false;
-  if (process.env.NODE_ENV === "development") {
-    return DEV_LOCAL_ORIGINS.includes(origin) || origin === FRONTEND_ORIGIN;
-  }
-  return origin === FRONTEND_ORIGIN;
+  return ALLOWED_ORIGINS.includes(origin);
 }
 
 const applicationSchema = z.object({
@@ -100,7 +89,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Set CORS header to allow the calling origin when allowed
-  const corsOrigin = origin ?? FRONTEND_ORIGIN;
+  const corsOrigin = origin!;
   const body = await req.json();
   const parsed = applicationSchema.safeParse(body);
 
@@ -133,7 +122,7 @@ export async function OPTIONS(req: NextRequest) {
   }
 
   const res = new NextResponse(null, { status: 204 });
-  res.headers.set("Access-Control-Allow-Origin", origin ?? FRONTEND_ORIGIN);
+  res.headers.set("Access-Control-Allow-Origin", origin!);
   res.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.headers.set("Access-Control-Allow-Headers", "Content-Type");
   return res;
