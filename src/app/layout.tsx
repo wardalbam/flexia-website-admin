@@ -4,8 +4,8 @@ import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { SWRProvider } from "@/components/providers/swr-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { headers } from "next/headers";
@@ -24,16 +24,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read request headers set by middleware. When the login page is requested
-  // the middleware will add `x-hide-layout: 1` so we can avoid rendering the
-  // Sidebar and Header for that route. `headers()` must be awaited in server
-  // components before accessing `.get()`.
   const reqHeaders = await headers();
   const hideLayout = reqHeaders.get("x-hide-layout") === "1";
 
-  // Dynamically load the client-side SW registration only when the layout
-  // is shown (admin pages). This avoids shipping the SW registration to
-  // server-only pages like the login route.
   let RegisterAdminSWComponent: any = null;
   if (!hideLayout) {
     try {
@@ -47,30 +40,28 @@ export default async function RootLayout({
   return (
     <html lang="nl">
       <head>
-        {/* Admin-only manifest: included in the admin RootLayout so only admin pages
-            expose the manifest and can be installed as a PWA. */}
         <link rel="manifest" href="/manifest-admin.json" />
       </head>
       <body className={`${inter.className} antialiased`}>
         <SessionProvider>
-          {!hideLayout && <Sidebar />}
-          {!hideLayout && <Header />}
-          <div
-            role="main"
-            className={cn(
-              "min-h-screen min-w-0",
-              hideLayout ? "" : "md:ml-64 pb-20 md:pb-4"
+          <SWRProvider>
+            {!hideLayout && <Sidebar />}
+            <div
+              role="main"
+              className={cn(
+                "min-h-screen min-w-0",
+                hideLayout ? "" : "md:ml-64 pb-20 md:pb-4"
+              )}
+            >
+              {children}
+            </div>
+            {!hideLayout && <MobileBottomNav />}
+            <Toaster />
+            {!hideLayout && RegisterAdminSWComponent && (
+              //@ts-ignore React element constructed from dynamic import
+              <RegisterAdminSWComponent />
             )}
-          >
-            {children}
-          </div>
-          {!hideLayout && <MobileBottomNav />}
-          <Toaster />
-          {/* Register admin service worker only when layout is rendered (i.e. admin pages) */}
-          {!hideLayout && RegisterAdminSWComponent && (
-            //@ts-ignore React element constructed from dynamic import
-            <RegisterAdminSWComponent />
-          )}
+          </SWRProvider>
         </SessionProvider>
       </body>
     </html>

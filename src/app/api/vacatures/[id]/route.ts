@@ -66,6 +66,7 @@ export async function GET(
   }
 
   const response = NextResponse.json(vacature);
+  response.headers.set("Cache-Control", "no-store");
 
   // Add CORS headers if origin is allowed
   if (origin && isOriginAllowed(origin)) {

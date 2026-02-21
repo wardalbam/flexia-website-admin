@@ -26,25 +26,23 @@ export default async function CategoriesManagementPage() {
   });
 
   return (
-    <main className="p-4 md:p-6 space-y-6">
-      {/* Header */}
+    <main className="p-4 md:p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Categorieën</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-black tracking-tight">Categorieën</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Beheer vacature categorieën
           </p>
         </div>
         <Link href="/settings/categories/new">
-          <Button className="gap-2 font-bold rounded-full">
+          <Button className="gap-2 font-semibold rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-all duration-300">
             <Plus className="h-4 w-4" />
             Nieuwe Categorie
           </Button>
         </Link>
       </div>
 
-      {/* Stats */}
-      <Card>
+      <Card className="shadow-layered border-0">
         <CardContent className="pt-6">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-primary/10 rounded-xl">
@@ -63,7 +61,7 @@ export default async function CategoriesManagementPage() {
       {/* Categories List */}
       <div className="space-y-3">
         {categories.length === 0 ? (
-          <Card>
+          <Card className="shadow-layered border-0">
             <CardContent className="py-12 text-center text-muted-foreground">
               Geen categorieën gevonden. Maak de eerste categorie aan.
             </CardContent>
@@ -71,7 +69,7 @@ export default async function CategoriesManagementPage() {
         ) : (
           categories.map((category) => (
             <Link key={category.id} href={`/settings/categories/${category.id}`}>
-              <Card className="hover-lift transition-all group cursor-pointer">
+              <Card className="hover-lift shadow-layered border-0 group cursor-pointer">
                 <CardContent className="flex items-center justify-between py-4">
                   <div className="flex items-center gap-4 flex-1">
                     <div

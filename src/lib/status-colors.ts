@@ -62,20 +62,50 @@ const defaultCategoryColor = {
   text: "text-gray-700 dark:text-gray-300",
   border: "border-gray-500/30 dark:border-gray-500/40",
   accent: "bg-gray-500",
+  background: "hsl(210 10% 90%)",
+  color: "#0a0a0a",
 };
 
 export function getCategoryColor(categoryName?: string | null) {
   if (!categoryName) return defaultCategoryColor;
 
-  // Pick a base color deterministically from the palette using a hash
+  // Deterministically hash the category name to a hue value
   const h = hashStringToInt(categoryName);
-  const base = BASE_PALETTE[h % BASE_PALETTE.length];
+  const hue = h % 360; // 0-359
 
-  // Build Tailwind class strings using the selected base color
-  const bg = `bg-${base}-500/30 dark:bg-${base}-500/40`;
-  const text = `text-${base}-800 dark:text-${base}-200`;
-  const border = `border-${base}-500/50 dark:border-${base}-500/60`;
-  const accent = `bg-${base}-500`;
+  // Use HSL to generate visually distinct, vibrant backgrounds
+  const saturation = 72; // percent
+  const lightness = 55; // percent for background
+  const bg = `hsl(${hue} ${saturation}% ${lightness}%)`;
 
-  return { bg, text, border, accent };
+  // Border: slightly darker
+  const borderLightness = Math.max(28, lightness - 12);
+  const border = `hsl(${hue} ${Math.max(50, saturation - 10)}% ${borderLightness}%)`;
+
+  // Decide text color (black or white) based on background luminance
+  // Convert HSL to RGB to compute relative luminance
+  function hslToRgb(h: number, s: number, l: number) {
+    s /= 100;
+    l /= 100;
+    const k = (n: number) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
+  }
+
+  const [r, g, b] = hslToRgb(hue, saturation, lightness);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  const text = luminance > 0.6 ? "#0a0a0a" : "#ffffff";
+
+  // Return both legacy keys (bg/text) and new inline-friendly keys (background/color)
+  return {
+    // legacy Tailwind-like keys kept for backward compatibility
+    bg: bg,
+    text: text,
+    border,
+    accent: `hsl(${hue} ${saturation}% ${Math.max(35, lightness - 20)}%)`,
+    // inline style friendly keys
+    background: bg,
+    color: text,
+  };
 }

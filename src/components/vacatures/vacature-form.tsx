@@ -167,22 +167,17 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       }
 
       toast.success(isEditing ? "Vacature bijgewerkt" : "Vacature aangemaakt");
-      // Optimistically update SWR cache for the vacature and vacature list
-      try {
-        if (isEditing && initialData?.id) {
-          globalMutate(`/api/vacatures/${initialData.id}`, payload, false);
-          globalMutate("/api/vacatures", (prev: any) => {
-            if (!prev) return prev;
-            return Array.isArray(prev)
-              ? prev.map((p: any) => (p.id === initialData.id ? { ...p, ...payload } : p))
-              : prev;
-          }, false);
-        } else if (!isEditing) {
-          // For new vacancy, revalidate list so it appears
-          globalMutate("/api/vacatures");
-        }
-      } catch (e) {}
-      router.push("/vacatures");
+      // Revalidate SWR cache so lists and detail views update immediately
+      globalMutate("/api/vacatures");
+      if (isEditing && initialData?.id) {
+        globalMutate(`/api/vacatures/${initialData.id}`);
+      }
+      // After editing, navigate to the vacatures shell and select the updated vacancy
+      if (isEditing && initialData?.id) {
+        router.push(`/vacatures?selected=${initialData.id}`);
+      } else {
+        router.push("/vacatures");
+      }
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Er is iets misgegaan");
@@ -214,6 +209,8 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       }
 
       toast.success(isArchived ? "Vacature teruggehaald uit archief" : "Vacature gearchiveerd");
+      globalMutate("/api/vacatures");
+      globalMutate(`/api/vacatures/${initialData.id}`);
       router.push("/vacatures");
       router.refresh();
     } catch (error) {
@@ -224,11 +221,11 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in pb-32 sm:pb-0">
       {/* Basic Info */}
-      <Card>
+      <Card className="shadow-layered border-0">
         <CardHeader>
-          <CardTitle>Basis Informatie</CardTitle>
+          <CardTitle className="text-base md:text-lg font-bold">Basis Informatie</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,6 +235,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
                 value={data.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Catering Medewerker - Den Haag"
+                className="h-11"
                 required
               />
             </div>
@@ -247,6 +245,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
                 value={data.subtitle}
                 onChange={(e) => setData({ ...data, subtitle: e.target.value })}
                 placeholder="Evenementen & Feesten"
+                className="h-11"
                 required
               />
             </div>
@@ -280,6 +279,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               value={data.description}
               onChange={(e) => setData({ ...data, description: e.target.value })}
               rows={2}
+              className="min-h-[84px]"
               required
             />
           </div>
@@ -287,9 +287,9 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       </Card>
 
       {/* Content */}
-      <Card>
+      <Card className="shadow-layered border-0">
         <CardHeader>
-          <CardTitle>Content</CardTitle>
+          <CardTitle className="text-base md:text-lg font-bold">Content</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -298,6 +298,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               value={data.longDescription}
               onChange={(e) => setData({ ...data, longDescription: e.target.value })}
               rows={4}
+              className="min-h-[120px] md:min-h-[160px]"
               required
             />
           </div>
@@ -307,6 +308,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               value={data.seoContent}
               onChange={(e) => setData({ ...data, seoContent: e.target.value })}
               rows={4}
+              className="min-h-[120px] md:min-h-[160px]"
               required
             />
           </div>
@@ -315,9 +317,9 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
 
       {/* Requirements & Benefits */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="shadow-layered border-0">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Vereisten</CardTitle>
+            <CardTitle className="text-base font-bold">Vereisten</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={() => handleArrayAdd("requirements")}>
               <Plus className="h-3.5 w-3.5" />
             </Button>
@@ -340,9 +342,9 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-layered border-0">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Voordelen</CardTitle>
+            <CardTitle className="text-base font-bold">Voordelen</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={() => handleArrayAdd("benefits")}>
               <Plus className="h-3.5 w-3.5" />
             </Button>
@@ -367,9 +369,9 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
       </div>
 
       {/* Details */}
-      <Card>
+      <Card className="shadow-layered border-0">
         <CardHeader>
-          <CardTitle>Details</CardTitle>
+          <CardTitle className="text-base md:text-lg font-bold">Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -432,7 +434,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
               placeholder="Flexia"
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Salaris (per uur)</Label>
               <Input
@@ -440,6 +442,7 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
                 step="0.01"
                 value={data.salary}
                 onChange={(e) => setData({ ...data, salary: parseFloat(e.target.value) || 0 })}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
@@ -471,41 +474,43 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3">
-        <div className="mt-3 sm:mt-0">
-          {isEditing && (
-            <Button
-              type="button"
-              variant={isArchived ? "default" : "outline"}
-              onClick={handleArchiveToggle}
-              disabled={archiving}
-              className={`${isArchived ? "" : "text-orange-600 hover:text-orange-700"} w-full sm:w-auto`}
-            >
-              {isArchived ? (
-                <>
-                  <ArchiveRestore className="h-4 w-4 mr-2" />
-                  {archiving ? "Terughalen..." : "Terughalen uit Archief"}
-                </>
-              ) : (
-                <>
-                  <Archive className="h-4 w-4 mr-2" />
-                  {archiving ? "Archiveren..." : "Archiveren"}
-                </>
+        {/* Sticky mobile action bar */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-3 sm:static sm:bg-transparent sm:backdrop-blur-0 sm:border-none sm:p-0">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              {isEditing && (
+                <Button
+                  type="button"
+                  variant={isArchived ? "default" : "outline"}
+                  onClick={handleArchiveToggle}
+                  disabled={archiving}
+                  className={`${isArchived ? "" : "text-orange-600 hover:text-orange-700"} w-full sm:w-auto`}
+                >
+                  {isArchived ? (
+                    <>
+                      <ArchiveRestore className="h-4 w-4 mr-2" />
+                      {archiving ? "Terughalen..." : "Terughalen uit Archief"}
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="h-4 w-4 mr-2" />
+                      {archiving ? "Archiveren..." : "Archiveren"}
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
-          )}
+            </div>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto rounded-full">
+                Annuleren
+              </Button>
+              <Button type="submit" disabled={saving} className="w-full sm:w-auto rounded-full font-semibold">
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto rounded-full">
-            Annuleren
-          </Button>
-          <Button type="submit" disabled={saving} className="w-full sm:w-auto rounded-full font-semibold">
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
-          </Button>
-        </div>
-      </div>
     </form>
   );
 }

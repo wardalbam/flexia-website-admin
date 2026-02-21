@@ -1,243 +1,206 @@
-// Header is now global in RootLayout
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useState } from "react";
+import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { statusLabels, getStatusBadgeClasses } from "@/lib/status-colors";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
-export default async function ApplicationsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string; search?: string; page?: string; vacatureId?: string; type?: string }>;
-}) {
-  const params = await searchParams;
-  const status = params.status;
-  const search = params.search;
-  const vacatureId = params.vacatureId;
-  const type = params.type; // 'all', 'general', or 'specific'
-  const page = parseInt(params.page || "1");
-  const limit = 20;
+export default function ApplicationsPage() {
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
 
-  const where: Record<string, unknown> = {};
-  if (status) where.status = status;
-  if (vacatureId) where.vacatureId = vacatureId;
-  if (type === "general") where.isGeneral = true;
-  if (type === "specific") where.isGeneral = false;
-  if (search) {
-    where.OR = [
-      { firstName: { contains: search, mode: "insensitive" } },
-      { lastName: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
-    ];
-  }
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("limit", "20");
+  if (status) params.set("status", status);
+  if (search) params.set("search", search);
 
-  // Fetch all vacatures for dropdown
-  const allVacatures = await prisma.vacature.findMany({
-    orderBy: { vacatureNumber: "desc" },
-    select: { id: true, title: true, vacatureNumber: true },
-  });
+  const { data, isLoading } = useSWR(`/api/applications?${params.toString()}`);
 
-  // Get selected vacature info if filtered
-  const selectedVacature = vacatureId
-    ? allVacatures.find((v: { id: string; title: string; vacatureNumber: number }) => v.id === vacatureId)
-    : null;
-
-  const [applications, total] = await Promise.all([
-    prisma.application.findMany({
-      where,
-      include: {
-        vacature: true,
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.application.count({ where }),
-  ]);
-
-  const totalPages = Math.ceil(total / limit);
-
-  // Build query string for pagination
-  const buildQueryString = (pageNum: number) => {
-    const params = new URLSearchParams();
-    params.set("page", pageNum.toString());
-    if (status) params.set("status", status);
-    if (search) params.set("search", search);
-    if (vacatureId) params.set("vacatureId", vacatureId);
-    if (type) params.set("type", type);
-    return params.toString();
-  };
+  const applications = data?.applications || [];
+  const pagination = data?.pagination || { page: 1, total: 0, totalPages: 1 };
+  const hasFilters = !!status || !!search;
 
   return (
-    <>
-      <main className="p-4 md:p-6 space-y-6">
-        {/* Modern Filter Section */}
-        <div className="bg-card rounded-xl border border-border shadow-layered p-4 md:p-6">
-          <form className="flex flex-col gap-3" action="/applications" method="GET">
-            <div className="flex flex-col md:flex-row gap-3">
-              <input
-                type="text"
-                name="search"
+    <div className="p-4 md:p-6 space-y-6 animate-fade-in">
+      {/* Page Title */}
+      <div>
+        <h1 className="text-2xl font-black tracking-tight">Sollicitaties</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {pagination.total} sollicitatie{pagination.total !== 1 ? "s" : ""} gevonden
+          {pagination.totalPages > 1 && ` — Pagina ${pagination.page} van ${pagination.totalPages}`}
+        </p>
+      </div>
+
+      {/* Filter Section */}
+      <Card className="shadow-layered border-0">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
                 placeholder="Zoek op naam of email..."
-                defaultValue={search || ""}
-                className="flex-1 min-w-0 px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 h-10 rounded-xl"
               />
-              <select
-                name="type"
-                defaultValue={type || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
-              >
-                <option value="">Alle sollicitaties</option>
-                <option value="specific">Vacature-specifiek</option>
-                <option value="general">Algemeen</option>
-              </select>
-              <select
-                name="vacatureId"
-                defaultValue={vacatureId || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
-                disabled={type === "general"}
-              >
-                <option value="">Alle vacatures</option>
-                {allVacatures.map((v: { id: string; title: string; vacatureNumber: number }) => (
-                  <option key={v.id} value={v.id}>
-                    #{v.vacatureNumber} - {v.title}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="status"
-                defaultValue={status || ""}
-                className="px-4 py-2.5 border-2 border-border rounded-xl text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-semibold min-w-0 md:min-w-[200px] w-full md:w-auto"
-              >
-                <option value="">Alle statussen</option>
-                {Object.entries(statusLabels).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-              <Button type="submit" className="font-semibold rounded-full">
-                Filteren
-              </Button>
+              {search && (
+                <button
+                  onClick={() => { setSearch(""); setPage(1); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
             </div>
-
-            {/* Active Filter Pills - make horizontally scrollable on small screens to avoid layout break */}
-            {(selectedVacature || status || type) && (
-              <div className="flex items-center gap-2 pt-2 overflow-x-auto scrollbar-hide touch-scroll">
-                {type && (
-                  <div className="shrink-0">
-                    <Link href={`/applications${status ? `?status=${status}` : ""}${vacatureId ? `${status ? "&" : "?"}vacatureId=${vacatureId}` : ""}`}>
-                      <Badge className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
-                        Type: {type === "general" ? "Algemeen" : "Vacature-specifiek"}
-                        <X className="h-4 w-4" />
-                      </Badge>
-                    </Link>
-                  </div>
-                )}
-                {selectedVacature && (
-                  <div className="shrink-0">
-                    <Link href={`/applications${status ? `?status=${status}` : ""}${type ? `${status ? "&" : "?"}type=${type}` : ""}`}>
-                      <Badge className="bg-blue-500 text-white hover:bg-blue-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
-                        Vacature: #{selectedVacature.vacatureNumber} - {selectedVacature.title}
-                        <X className="h-4 w-4" />
-                      </Badge>
-                    </Link>
-                  </div>
-                )}
-                {status && (
-                  <div className="shrink-0">
-                    <Link href={`/applications${vacatureId ? `?vacatureId=${vacatureId}` : ""}${type ? `${vacatureId ? "&" : "?"}type=${type}` : ""}`}>
-                      <Badge className="bg-purple-500 text-white hover:bg-purple-600 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
-                        Status: {statusLabels[status] || status}
-                        <X className="h-4 w-4" />
-                      </Badge>
-                    </Link>
-                  </div>
-                )}
-              </div>
+            <Select value={status} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="w-full md:w-[200px] h-10 rounded-xl">
+                <SelectValue placeholder="Alle statussen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle statussen</SelectItem>
+                {Object.entries(statusLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {hasFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearch(""); setStatus(""); setPage(1); }}
+                className="h-10 rounded-xl gap-1.5"
+              >
+                <X className="h-3.5 w-3.5" />
+                Reset
+              </Button>
             )}
-          </form>
-        </div>
+          </div>
 
-        {/* Stats row */}
-        <div className="flex gap-2 text-sm text-muted-foreground">
-          <span>{total} sollicitatie{total !== 1 ? "s" : ""} gevonden</span>
-          {totalPages > 1 && <span>- Pagina {page} van {totalPages}</span>}
-        </div>
+          {/* Active filters */}
+          {hasFilters && (
+            <div className="flex items-center gap-2 pt-3 flex-wrap">
+              {status && (
+                <Badge
+                  className="bg-purple-500/10 text-purple-700 border-purple-500/20 cursor-pointer rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5"
+                  onClick={() => setStatus("")}
+                >
+                  {statusLabels[status] || status}
+                  <X className="h-3 w-3" />
+                </Badge>
+              )}
+              {search && (
+                <Badge
+                  className="bg-blue-500/10 text-blue-700 border-blue-500/20 cursor-pointer rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5"
+                  onClick={() => setSearch("")}
+                >
+                  &ldquo;{search}&rdquo;
+                  <X className="h-3 w-3" />
+                </Badge>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Applications list */}
-        <div className="space-y-3">
-          {applications.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Geen sollicitaties gevonden.
-              </CardContent>
-            </Card>
-          ) : (
-          applications.map((app: any) => (
-              <Card key={app.id} className="hover-lift group">
-                <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
-                  <div className="space-y-1 flex-1 min-w-0">
-                    <p className="font-bold text-base tracking-tight">
-                      <Link href={`/applications/${app.id}`} className="hover:underline">
+      {/* Applications List */}
+      <div className="space-y-3">
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-sm" />
+          ))
+        ) : applications.length === 0 ? (
+          <Card className="shadow-layered border-0">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              Geen sollicitaties gevonden.
+            </CardContent>
+          </Card>
+        ) : (
+          applications.map((app: any, i: number) => (
+            <Card key={app.id} className={cn("shadow-layered border-0 hover-lift group", `animate-fade-in stagger-${Math.min(i + 1, 6)}`)}>
+              <CardContent className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-primary text-sm font-bold">{app.firstName[0]}{app.lastName[0]}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm tracking-tight">
+                      <Link href={`/applications/${app.id}`} className="hover:text-primary transition-colors">
                         {app.firstName} {app.lastName}
                       </Link>
                     </p>
-                    <p className="text-sm text-muted-foreground font-medium">
+                    <p className="text-xs text-muted-foreground font-medium truncate">
                       {app.email} &middot; {app.phone}
                     </p>
-                    {app.isGeneral ? (
-                      <p className="text-xs text-primary font-bold flex items-center gap-2">
-                        <Badge className="bg-purple-500/10 text-purple-700 border-purple-500/20 font-bold">
-                          Algemene sollicitatie
-                        </Badge>
-                      </p>
-                    ) : app.vacature ? (
-                      // Vacancy link: opens vacancy detail in admin
-                      <p className="text-xs text-muted-foreground font-semibold">
-                        <Link href={`/vacatures/${app.vacature.id}`} className="text-[var(--brand)] hover:underline">
-                          #{app.vacature.vacatureNumber} - {app.vacature.title}
+                    {app.vacature && (
+                      <p className="text-xs mt-0.5">
+                        <Link href={`/vacatures/${app.vacature.slug || app.vacatureId}`} className="text-primary hover:underline font-semibold">
+                          {app.vacature.title}
                         </Link>
                       </p>
-                    ) : null}
+                    )}
                   </div>
-                  <div className="flex items-center gap-3 flex-wrap md:flex-nowrap min-w-0">
-                    <Badge className={cn("font-bold", getStatusBadgeClasses(app.status))}>
-                      {statusLabels[app.status] || app.status}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-                      {new Date(app.createdAt).toLocaleDateString("nl-NL")}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge className={cn("font-bold text-xs", getStatusBadgeClasses(app.status))}>
+                    {statusLabels[app.status] || app.status}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+                    {new Date(app.createdAt).toLocaleDateString("nl-NL")}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center gap-2">
+          {page > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page - 1)}
+              className="rounded-full"
+            >
+              Vorige
+            </Button>
+          )}
+          <span className="flex items-center text-sm text-muted-foreground px-3">
+            {page} / {pagination.totalPages}
+          </span>
+          {page < pagination.totalPages && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page + 1)}
+              className="rounded-full"
+            >
+              Volgende
+            </Button>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2">
-            {page > 1 && (
-              <Link
-                href={`/applications?${buildQueryString(page - 1)}`}
-                className="px-4 py-2 border border-input rounded-full text-sm font-medium hover:bg-muted transition-all"
-              >
-                Vorige
-              </Link>
-            )}
-            {page < totalPages && (
-              <Link
-                href={`/applications?${buildQueryString(page + 1)}`}
-                className="px-4 py-2 border border-input rounded-full text-sm font-medium hover:bg-muted transition-all"
-              >
-                Volgende
-              </Link>
-            )}
-          </div>
-        )}
-      </main>
-    </>
+      )}
+    </div>
   );
 }

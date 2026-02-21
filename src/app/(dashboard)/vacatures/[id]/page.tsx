@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { VacatureDetailView } from "@/components/vacatures/VacatureDetailView";
+import { headers } from "next/headers";
 
 export default async function VacatureDetailPage({
   params,
@@ -47,10 +48,23 @@ export default async function VacatureDetailPage({
     },
   });
 
+  // Decide whether to render standalone detail (mobile) or redirect to shell (desktop)
+  const h = await headers();
+  const ua = h.get("user-agent") || "";
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+
+  if (!isMobile) {
+    // Desktop: redirect to shell (list + detail)
+    redirect(`/vacatures?selected=${id}`);
+  }
+
+  // Mobile: render standalone vacancy detail page
   return (
-    <VacatureDetailView
-      initialVacature={JSON.parse(JSON.stringify(vacature))}
-      allVacatures={JSON.parse(JSON.stringify(allVacatures))}
-    />
+    <div className="animate-fade-in">
+      <VacatureDetailView
+        initialVacature={JSON.parse(JSON.stringify(vacature))}
+        allVacatures={JSON.parse(JSON.stringify(allVacatures))}
+      />
+    </div>
   );
 }

@@ -41,18 +41,17 @@ export default async function UsersManagementPage() {
   const isAdmin = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
 
   return (
-    <main className="p-4 md:p-6 space-y-6">
-      {/* Header */}
+    <main className="p-4 md:p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Gebruikers</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-black tracking-tight">Gebruikers</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Beheer administrators en managers
           </p>
         </div>
         {isAdmin && (
           <Link href="/settings/users/new">
-            <Button className="gap-2 font-bold rounded-full">
+            <Button className="gap-2 font-semibold rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-all duration-300">
               <Plus className="h-4 w-4" />
               Nieuwe Gebruiker
             </Button>
@@ -60,9 +59,8 @@ export default async function UsersManagementPage() {
         )}
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="shadow-layered border-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-purple-500/10 rounded-xl">
@@ -80,7 +78,7 @@ export default async function UsersManagementPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-layered border-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-blue-500/10 rounded-xl">
@@ -96,7 +94,7 @@ export default async function UsersManagementPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-layered border-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-green-500/10 rounded-xl">
@@ -116,9 +114,9 @@ export default async function UsersManagementPage() {
       </div>
 
       {/* Permissions Info */}
-      <Card className="bg-muted/50">
+      <Card className="shadow-layered border-0 bg-muted/50">
         <CardHeader>
-          <CardTitle className="text-lg">Rechten</CardTitle>
+          <CardTitle className="text-base font-bold">Rechten</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
@@ -158,7 +156,7 @@ export default async function UsersManagementPage() {
           const isCurrentUser = user.id === currentUser.id;
 
           return (
-            <Card key={user.id}>
+            <Card key={user.id} className="shadow-layered border-0 hover-lift">
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-4 flex-1">
                   <div className="p-3 bg-muted rounded-xl">

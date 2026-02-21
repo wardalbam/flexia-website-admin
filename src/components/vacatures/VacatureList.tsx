@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 type Vacature = any;
 
-export default function VacatureList({ initialVacatures, onSelect, compact = false, selectedId }: { initialVacatures: Vacature[]; onSelect?: (id: string) => void; compact?: boolean; selectedId?: string }) {
+export default function VacatureList({ vacatures, onSelect, compact = false, selectedId }: { vacatures: Vacature[]; onSelect?: (id: string) => void; compact?: boolean; selectedId?: string }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const prefetched = useRef(new Set<string>());
@@ -33,15 +33,15 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
   const [sortBy, setSortBy] = useState<string>("newest");
 
   const categories = useMemo(() => {
-    return Array.from(new Set(initialVacatures.map(v => v.category?.name))).filter(Boolean) as string[];
-  }, [initialVacatures]);
+    return Array.from(new Set(vacatures.map(v => v.category?.name))).filter(Boolean) as string[];
+  }, [vacatures]);
 
   const locations = useMemo(() => {
-    return Array.from(new Set(initialVacatures.map(v => v.city))).filter(Boolean) as string[];
-  }, [initialVacatures]);
+    return Array.from(new Set(vacatures.map(v => v.city))).filter(Boolean) as string[];
+  }, [vacatures]);
 
   const filtered = useMemo(() => {
-    let result = initialVacatures.filter((v) => {
+    let result = vacatures.filter((v) => {
       // Status filter
       if (statusFilter === "active" && (!v.isActive || v.archived)) return false;
       if (statusFilter === "inactive" && v.isActive) return false;
@@ -77,7 +77,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
     }
 
     return result;
-  }, [initialVacatures, statusFilter, categoryFilter, locationFilter, sortBy, search]);
+  }, [vacatures, statusFilter, categoryFilter, locationFilter, sortBy, search]);
 
   const hasFilters = statusFilter !== "all" || categoryFilter !== "all" || locationFilter !== "all" || search !== "";
 
@@ -91,12 +91,12 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
 
   // Counts for status tabs
   const counts = useMemo(() => {
-    const all = initialVacatures.length;
-    const active = initialVacatures.filter(v => v.isActive && !v.archived).length;
-    const inactive = initialVacatures.filter(v => !v.isActive).length;
-    const archived = initialVacatures.filter(v => v.archived).length;
+    const all = vacatures.length;
+    const active = vacatures.filter(v => v.isActive && !v.archived).length;
+    const inactive = vacatures.filter(v => !v.isActive).length;
+    const archived = vacatures.filter(v => v.archived).length;
     return { all, active, inactive, archived };
-  }, [initialVacatures]);
+  }, [vacatures]);
 
   const [quickId, setQuickId] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
@@ -216,7 +216,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
 
         {/* Count */}
         <span className="text-sm text-muted-foreground ml-auto">
-          {filtered.length} van {initialVacatures.length}
+          {filtered.length} van {vacatures.length}
         </span>
       </div>
 
@@ -224,7 +224,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
       {filtered.length > 0 ? (
         <>
         <div className={compact ? "space-y-3" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
-          {filtered.map((v) => {
+          {filtered.map((v, idx) => {
             const categoryColor = getCategoryColor(v.category?.name);
             const applicationsCount = v._count?.applications ?? 0;
             const dateAdded = v.createdAt || v.publishedAt;
@@ -235,7 +235,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
             return (
               <div
                 key={v.id}
-                className="group h-full"
+                className={cn("group h-full animate-fade-in", `stagger-${Math.min((idx % 6) + 1, 6)}`)}
                 onMouseEnter={() => {
                   // Prefetch the server route (RSC) and warm the vacancy API so the detail modal appears instantly on click
                   try {
@@ -272,13 +272,13 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
               >
                 <Card
                   className={cn(
-                    "relative shadow-layered hover-lift cursor-pointer border border-border h-full flex flex-col bg-card rounded-xl overflow-hidden",
+                    "relative shadow-layered hover-lift cursor-pointer border-0 h-full flex flex-col bg-card rounded-xl overflow-hidden",
                     isSelected ? "ring-2 ring-[var(--brand)] bg-[var(--brand)]/5" : ""
                   )}
                   onClick={(e) => {
-                      // On small screens, navigate to the vacancy overview page instead of opening the quick-view dialog
+                      // On small screens, navigate to the vacancy overview page (standalone) instead of opening the quick-view dialog
                       try {
-                        const isMobile = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+                        const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
                         if (isMobile) {
                           // navigate to the vacancy page (full overview) on mobile
                           try {
@@ -313,20 +313,18 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                       {v.title}
                     </h3>
 
-                    {/* Short description (frontend-like) */}
-                    {v.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{v.description}</p>
-                    )}
+                    {/* Short description intentionally removed per design: keep cards concise */}
 
                     {/* Category & Company */}
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge className={cn(
-                        "rounded-full font-bold text-[11px] px-2.5 py-0.5",
-                        categoryColor.bg,
-                        categoryColor.text,
-                        "border",
-                        categoryColor.border
-                      )}>
+                      <Badge
+                        className="rounded-full font-bold text-[11px] px-2.5 py-0.5 border"
+                        style={{
+                          backgroundColor: categoryColor.background ?? categoryColor.bg ?? categoryColor.background,
+                          color: categoryColor.color ?? categoryColor.text ?? undefined,
+                          borderColor: categoryColor.border,
+                        }}
+                      >
                         {v.category?.name}
                       </Badge>
                       {v.companyName && (
@@ -344,9 +342,7 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                       </div>
                       <div className="flex items-center gap-1">
                         <Briefcase className="h-3 w-3" />
-                        <span>{(v.employmentType || []).slice(0, 2).map((t: string) =>
-                          t.replace("_", " ")
-                        ).join(", ")}</span>
+                        <span>{(v.employmentType || []).slice(0, 2).map((t: string) => t.replace("_", " ")).join(", ")}</span>
                       </div>
                       {dateAdded && (
                         <span className="ml-auto">
@@ -376,6 +372,8 @@ export default function VacatureList({ initialVacatures, onSelect, compact = fal
                           <div className="text-sm font-medium">€{v.salary ?? 0}/uur</div>
                           <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                         </div>
+                        {/* Quick edit from overview: open edit page */}
+                        
                       </div>
 
                       <div className="flex items-center gap-2 mt-2">

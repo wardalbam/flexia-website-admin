@@ -1,6 +1,5 @@
 "use client";
 
-// Header is now global in RootLayout
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,111 +58,115 @@ export default function SettingsPage() {
   };
 
   return (
-    <>
-      <main className="p-4 space-y-6 max-w-2xl">
-        {/* header shows the page title */}
+    <div className="p-4 md:p-6 space-y-6 max-w-2xl animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-black tracking-tight">Instellingen</h1>
+        <p className="text-sm text-muted-foreground mt-1">Beheer je account en voorkeuren</p>
+      </div>
 
-        {/* Admin Quick Links - Mobile Only */}
-        {isAdmin && (
-          <Card className="md:hidden">
-            <CardHeader>
-              <CardTitle>Beheer</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Link href="/settings/categories">
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Layers className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-bold">Categorieën</span>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </Link>
-              <Link href="/settings/users">
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <UserCog className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-bold">Gebruikers</span>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
+      {/* Admin Quick Links - Mobile Only */}
+      {isAdmin && (
+        <Card className="md:hidden shadow-layered border-0 animate-fade-in stagger-1">
           <CardHeader>
-            <CardTitle>Wachtwoord Wijzigen</CardTitle>
+            <CardTitle className="text-base font-bold">Beheer</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Huidig Wachtwoord</Label>
-                <Input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
+          <CardContent className="space-y-2">
+            <Link href="/settings/categories">
+              <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <Layers className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="font-semibold text-sm">Categorieën</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="space-y-2">
-                <Label>Nieuw Wachtwoord</Label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={8}
-                />
+            </Link>
+            <Link href="/settings/users">
+              <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <UserCog className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="font-semibold text-sm">Gebruikers</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="space-y-2">
-                <Label>Bevestig Nieuw Wachtwoord</Label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={8}
-                />
-              </div>
-              <Button type="submit" disabled={saving} className="rounded-full">
-                {saving ? "Opslaan..." : "Wachtwoord Wijzigen"}
-              </Button>
-            </form>
+            </Link>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>API Informatie</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div>
-              <p className="text-muted-foreground">Publieke Vacatures API</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded">
-                GET /api/vacatures?active=true
-              </code>
+      <Card className="shadow-layered border-0 animate-fade-in stagger-2">
+        <CardHeader>
+          <CardTitle className="text-base font-bold">Wachtwoord Wijzigen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wide">Huidig Wachtwoord</Label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+                className="rounded-xl"
+              />
             </div>
-            <div>
-              <p className="text-muted-foreground">Sollicitatie Indienen</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded">
-                POST /api/applications
-              </code>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wide">Nieuw Wachtwoord</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                className="rounded-xl"
+              />
             </div>
-            <div>
-              <p className="text-muted-foreground">Vacature Detail</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded">
-                GET /api/vacatures/[slug]
-              </code>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wide">Bevestig Nieuw Wachtwoord</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                className="rounded-xl"
+              />
             </div>
-          </CardContent>
-        </Card>
-      </main>
-    </>
+            <Button type="submit" disabled={saving} className="rounded-full font-semibold">
+              {saving ? "Opslaan..." : "Wachtwoord Wijzigen"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-layered border-0 animate-fade-in stagger-3">
+        <CardHeader>
+          <CardTitle className="text-base font-bold">API Informatie</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div>
+            <p className="text-muted-foreground text-xs uppercase tracking-wide mb-1">Publieke Vacatures API</p>
+            <code className="text-xs bg-muted px-3 py-1.5 rounded-lg inline-block font-semibold">
+              GET /api/vacatures?active=true
+            </code>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs uppercase tracking-wide mb-1">Sollicitatie Indienen</p>
+            <code className="text-xs bg-muted px-3 py-1.5 rounded-lg inline-block font-semibold">
+              POST /api/applications
+            </code>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs uppercase tracking-wide mb-1">Vacature Detail</p>
+            <code className="text-xs bg-muted px-3 py-1.5 rounded-lg inline-block font-semibold">
+              GET /api/vacatures/[slug]
+            </code>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

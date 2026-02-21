@@ -1,10 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,7 @@ import {
   Gift,
   ArrowLeft,
   Share2,
+  Search,
 } from "lucide-react";
 
 type Vacature = any;
@@ -58,6 +59,7 @@ export function VacatureDetailView({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [sidebarSearch, setSidebarSearch] = useState("");
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
   // Keep internal selectedId in sync when parent passes a different initialVacature.
@@ -139,17 +141,16 @@ export function VacatureDetailView({
 
   const handleDelete = async () => {
     setDeleting(true);
-    // Optimistically remove vacancy from list cache
-    try {
-      globalMutate("/api/vacatures", (prev: any) => {
-        if (!prev) return prev;
-        return Array.isArray(prev) ? prev.filter((p: any) => p.id !== vacancy.id) : prev;
-      }, false);
-    } catch (e) {}
     try {
       const res = await fetch(`/api/vacatures/${vacancy.id}`, {
         method: "DELETE",
       });
+      if (!res.ok) throw new Error();
+      toast.success("Vacature verwijderd");
+      // Revalidate the vacatures list so the UI updates immediately
+      globalMutate("/api/vacatures");
+      router.push("/vacatures");
+      router.refresh();
     } catch {
       toast.error("Er ging iets mis bij het verwijderen");
     } finally {
@@ -199,76 +200,97 @@ export function VacatureDetailView({
 
   return (
     <div className={cn("flex flex-col lg:flex-row transition-transform duration-200 ease-out", entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2")}>
-      {/* Sidebar with Vacature List - Desktop Only (render only when this detail view is standalone) */}
+      {/* Sidebar with Vacature List - Desktop Only */}
       {!onClose && (
-        // Left column should be sticky and scroll independently from the main content.
         <aside className="hidden lg:block w-80 border-r border-border bg-card lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:overflow-auto">
-        <div className="p-4 border-b border-border sticky top-0 bg-card z-10">
-          {onClose ? (
-            <Button variant="ghost" size="sm" className="gap-2 font-bold" onClick={onClose}>
-              <ArrowLeft className="h-4 w-4" />
-              Alle Vacatures
-            </Button>
-          ) : (
-            <a href="/vacatures">
-              <Button variant="ghost" size="sm" className="gap-2 font-bold">
-                <ArrowLeft className="h-4 w-4" />
-                Alle Vacatures
-              </Button>
-            </a>
-          )}
-        </div>
-        <div className="p-3 space-y-2">
-          {allVacatures.map((v) => {
-            const isActive = v.id === vacancy.id;
-            const vCategoryColor = getCategoryColor(v.category?.name);
-            return (
-              <button
-                key={v.id}
-                onClick={() => handleVacatureClick(v.id)}
-                onMouseEnter={() => prefetchVacature(v.id)}
-                onFocus={() => prefetchVacature(v.id)}
-                className={cn(
-                  "w-full text-left p-3 rounded-xl border transition-all duration-300 cursor-pointer",
-                  isActive
-                    ? "bg-[var(--brand)]/5 border-[var(--brand)] shadow-sm"
-                    : "border-border hover:bg-muted hover:border-muted-foreground/20"
-                )}
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h4 className="font-bold text-sm line-clamp-2 flex-1 min-w-0">
-                    {v.title}
-                  </h4>
-                  {!v.isActive && (
-                    <Badge className="bg-red-500/10 text-red-700 border-red-500/20 text-xs px-1.5 py-0">
-                      ✕
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge
+          <div className="sticky top-0 bg-card z-10 border-b border-border">
+            <div className="p-3 pb-2">
+              <a href="/vacatures">
+                <Button variant="ghost" size="sm" className="gap-2 font-bold">
+                  <ArrowLeft className="h-4 w-4" />
+                  Alle Vacatures
+                </Button>
+              </a>
+            </div>
+            <div className="px-3 pb-3">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Zoek vacature..."
+                  value={sidebarSearch}
+                  onChange={(e) => setSidebarSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-border bg-muted/50 placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] focus:border-[var(--brand)] transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="p-2 space-y-1">
+            {allVacatures
+              .filter((v) => {
+                if (!sidebarSearch.trim()) return true;
+                const q = sidebarSearch.toLowerCase();
+                return (
+                  v.title.toLowerCase().includes(q) ||
+                  v.category?.name?.toLowerCase().includes(q) ||
+                  String(v.vacatureNumber).includes(q)
+                );
+              })
+              .map((v) => {
+                const isActive = v.id === vacancy.id;
+                const vCategoryColor = getCategoryColor(v.category?.name);
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => handleVacatureClick(v.id)}
+                    onMouseEnter={() => prefetchVacature(v.id)}
+                    onFocus={() => prefetchVacature(v.id)}
                     className={cn(
-                      "rounded-full text-xs px-2 py-0.5",
-                      vCategoryColor.bg,
-                      vCategoryColor.text,
-                      "border",
-                      vCategoryColor.border
+                      "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer",
+                      isActive
+                        ? "bg-[var(--brand)]/5 border-[var(--brand)]/40 shadow-sm"
+                        : "border-transparent hover:bg-muted/80"
                     )}
                   >
-                    {v.category?.name}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {v._count.applications}
-                  </span>
-                  <span>#{v.vacatureNumber}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h4 className="font-bold text-sm line-clamp-1 flex-1 min-w-0">
+                        {v.title}
+                      </h4>
+                      {!v.isActive && (
+                        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" title="Inactief" />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge
+                        className="rounded-full text-[10px] px-2 py-0 border"
+                        style={{
+                          backgroundColor: vCategoryColor.background ?? vCategoryColor.bg,
+                          color: vCategoryColor.color ?? vCategoryColor.text,
+                          borderColor: vCategoryColor.border,
+                        }}
+                      >
+                        {v.category?.name}
+                      </Badge>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-0.5">
+                          <Users className="h-3 w-3" />
+                          {v._count.applications}
+                        </span>
+                        <span>#{v.vacatureNumber}</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            {allVacatures.length > 0 &&
+              !allVacatures.some((v) => {
+                if (!sidebarSearch.trim()) return true;
+                const q = sidebarSearch.toLowerCase();
+                return v.title.toLowerCase().includes(q) || v.category?.name?.toLowerCase().includes(q) || String(v.vacatureNumber).includes(q);
+              }) && (
+                <p className="text-xs text-muted-foreground text-center py-4">Geen resultaten</p>
+              )}
+          </div>
         </aside>
       )}
 
@@ -276,7 +298,7 @@ export function VacatureDetailView({
       <main className="flex-1">
         <div
           className={cn(
-            "max-w-4xl mx-auto p-6 space-y-8 transition-opacity duration-200",
+            "max-w-4xl mx-auto p-4 md:p-6 space-y-6 transition-opacity duration-200",
             isLoading && "opacity-50 pointer-events-none"
           )}
         >
@@ -290,209 +312,240 @@ export function VacatureDetailView({
             </a>
           </div>
 
-          {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3 flex-wrap">
-                <Badge
-                  className={cn(
-                    "rounded-full font-bold text-sm px-4 py-1.5",
-                    categoryColor.bg,
-                    categoryColor.text,
-                    "border",
-                    categoryColor.border
-                  )}
-                >
-                  {vacancy.category?.name}
-                </Badge>
-                {!vacancy.isActive && (
-                  <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
-                    Inactief
-                  </Badge>
-                )}
-                {vacancy.archived && (
-                  <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
-                    Gearchiveerd
-                  </Badge>
-                )}
-                <span className="text-xs text-muted-foreground ml-auto">#{vacancy.vacatureNumber}</span>
-              </div>
+          {/* Back to list button (visible on all sizes) */}
+          <div className="hidden lg:block mb-3">
+            <a href="/vacatures" className="inline-flex">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Terug naar lijst
+              </Button>
+            </a>
+          </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-2">
-                {vacancy.title}
-              </h1>
-
-              <p className="text-lg text-muted-foreground font-medium mb-4">
-                {vacancy.subtitle}
-              </p>
-
-              {/* Compact Stats Row */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="relative group inline-block">
-                  <a href={`/applications?vacatureId=${vacancy.id}`} className="inline-flex items-center gap-3 bg-muted/40 rounded-md px-3 py-2 text-sm">
-                    <div className="p-1 bg-muted/20 rounded">
-                      <Users className="h-4 w-4 text-foreground" />
-                    </div>
-                    <div className="leading-tight text-sm">
-                      <div className="text-base font-bold">{vacancy._count?.applications ?? 0}</div>
-                      <div className="text-xs text-muted-foreground">sollicitaties</div>
-                    </div>
-                  </a>
-
-                  {vacancy.applications && vacancy.applications.length > 0 && (
-                    <div className="absolute left-0 z-20 mt-2 w-64 bg-popover text-popover-foreground rounded-md border p-2 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
-                      <div className="text-xs text-muted-foreground mb-1">Recente sollicitanten</div>
-                      <ul className="space-y-1 max-h-40 overflow-auto">
-                        {vacancy.applications.map((a: any) => (
-                          <li key={a.id} className="text-sm">
-                            <strong className="font-semibold">{a.firstName} {a.lastName}</strong>
-                            <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString("nl-NL")}</div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                <div className="inline-flex items-center gap-3 bg-muted/40 rounded-md px-3 py-2 text-sm">
-                  <div className="p-1 bg-muted/20 rounded">
-                    <Calendar className="h-4 w-4 text-foreground" />
+          {/* Header Card */}
+          <Card className="shadow-layered border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
+                    <Badge
+                      className="rounded-full font-bold text-sm px-4 py-1.5 border"
+                      style={{
+                        backgroundColor: categoryColor.background ?? categoryColor.bg,
+                        color: categoryColor.color ?? categoryColor.text,
+                        borderColor: categoryColor.border,
+                      }}
+                    >
+                      {vacancy.category?.name}
+                    </Badge>
+                    {!vacancy.isActive && (
+                      <Badge className="bg-red-500/10 text-red-700 border-red-500/20 font-semibold px-3 py-1">
+                        Inactief
+                      </Badge>
+                    )}
+                    {vacancy.archived && (
+                      <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/20 font-semibold px-3 py-1">
+                        Gearchiveerd
+                      </Badge>
+                    )}
+                    <span className="text-xs text-muted-foreground ml-auto">#{vacancy.vacatureNumber}</span>
                   </div>
-                  <div className="leading-tight text-sm">
-                    <div className="text-base font-bold">{daysOnline}</div>
-                    <div className="text-xs text-muted-foreground">dagen online</div>
+
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-1">
+                    {vacancy.title}
+                  </h1>
+
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">{vacancy.subtitle || "—"}</p>
                   </div>
                 </div>
+                {/* Actions were moved — they will render at the bottom of the detail view for clearer grouping */}
+              </div>
+            </CardContent>
+          </Card>
 
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground ml-auto">
-                  <MapPin className="h-4 w-4" />
-                  <span className="font-semibold">{vacancy.location || vacancy.city}</span>
+          {/* Quick Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <a href={`/applications?vacatureId=${vacancy.id}`} className="group">
+              <Card className="shadow-layered border-0 hover-lift h-full">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-500/10 rounded-xl">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black">{(vacancy._count?.applications ?? 0) || ""}</p>
+                    <p className="text-xs text-muted-foreground">{(vacancy._count?.applications ?? 0) === 0 ? "Nog geen sollicitaties" : "Sollicitaties"}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </a>
+
+            <Card className="shadow-layered border-0 h-full">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-2.5 bg-green-500/10 rounded-xl">
+                  <Calendar className="h-5 w-5 text-green-600" />
                 </div>
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <Euro className="h-4 w-4" />
-                  <span className="font-semibold">€{vacancy.salary}/uur</span>
+                <div>
+                  <p className="text-2xl font-black">{daysOnline}</p>
+                  <p className="text-xs text-muted-foreground">Dagen online</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-layered border-0 h-full">
+              <CardContent className="p-4 flex items-center gap-3">
+                  <div className="p-2.5 bg-purple-500/10 rounded-xl">
+                  <MapPin className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-black">{vacancy.city || vacancy.location || "—"}</p>
+                  <p className="text-xs text-muted-foreground">Locatie</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-layered border-0 h-full">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/10 rounded-xl">
+                  <Euro className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-black">{vacancy.salary ? `€${vacancy.salary}` : "—"}</p>
+                  <p className="text-xs text-muted-foreground">Salaris</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Dienstverband Card */}
+          <Card className="shadow-layered border-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                Dienstverband
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 items-center">
+                {/* also show badges for clarity */}
+                <div className="flex flex-wrap gap-2">
+                  {vacancy.employmentType.map((type: string) => (
+                    <Badge key={type} className="bg-muted text-foreground border border-border px-4 py-1.5 text-sm font-semibold">
+                      {type.replace("_", " ")}
+                    </Badge>
+                  ))}
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Actions - compact and placed to the right */}
-            <div className="flex-shrink-0 flex items-start gap-2">
-              <a href={`/vacatures/${vacancy.id}/edit`}>
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Edit className="h-4 w-4" /> Bewerken
-                </Button>
-              </a>
-              <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
-                <Share2 className="h-4 w-4" /> Deel
-              </Button>
-              <Button size="sm" variant="destructive" className="gap-2" onClick={() => setDeleteOpen(true)}>
-                <Trash2 className="h-4 w-4" /> Verwijderen
-              </Button>
-            </div>
-          </div>
-
-          {/* Note: large action buttons removed to avoid duplication; actions are available in the header */}
-
-          {/* Dienstverband */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-bold">Dienstverband</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {vacancy.employmentType.map((type: string) => (
-                <Badge
-                  key={type}
-                  className="bg-muted text-foreground border border-border px-4 py-1.5 text-sm font-semibold"
-                >
-                  {type.replace("_", " ")}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60") }>
-            <h2 className="text-2xl font-black mb-3">Beschrijving</h2>
-            {contentVisible ? (
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                {vacancy.description}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            )}
-          </div>
-
-          {/* Long Description */}
-          {vacancy.longDescription && vacancy.longDescription !== vacancy.description && (
-            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
-              <h2 className="text-2xl font-black mb-3">Meer informatie</h2>
+          {/* Description Card */}
+          <Card className={cn("shadow-layered border-0 transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-bold">Beschrijving</CardTitle>
+            </CardHeader>
+            <CardContent>
               {contentVisible ? (
-                <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {vacancy.longDescription}
-                </div>
+                <p className="text-muted-foreground leading-relaxed">
+                  {vacancy.description}
+                </p>
               ) : (
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-4 w-3/4" />
                 </div>
               )}
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Long Description Card */}
+          {vacancy.longDescription && vacancy.longDescription !== vacancy.description && (
+            <Card className={cn("shadow-layered border-0 transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold">Meer informatie</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {contentVisible ? (
+                  <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {vacancy.longDescription}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
-          {/* Requirements */}
-          {vacancy.requirements?.length > 0 && (
-            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
-              <h2 className="text-2xl font-black mb-4">Vereisten</h2>
-              {contentVisible ? (
-                <ul className="space-y-3">
-                  {vacancy.requirements.map((req: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-foreground mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <ul className="space-y-3">
-                  <li><Skeleton className="h-4 w-full" /></li>
-                  <li><Skeleton className="h-4 w-5/6" /></li>
-                  <li><Skeleton className="h-4 w-4/6" /></li>
-                </ul>
-              )}
-            </div>
-          )}
+          {/* Requirements & Benefits - side by side on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Requirements Card */}
+            {vacancy.requirements?.length > 0 && (
+              <Card className={cn("shadow-layered border-0 transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                    Vereisten
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {contentVisible ? (
+                    <ul className="space-y-2.5">
+                      {vacancy.requirements.map((req: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="space-y-3">
+                      <li><Skeleton className="h-4 w-full" /></li>
+                      <li><Skeleton className="h-4 w-5/6" /></li>
+                      <li><Skeleton className="h-4 w-4/6" /></li>
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Benefits */}
-          {vacancy.benefits?.length > 0 && (
-            <div className={cn("transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
-              <h2 className="text-2xl font-black mb-4">Wat bieden wij?</h2>
-              {contentVisible ? (
-                <ul className="space-y-3">
-                  {vacancy.benefits.map((benefit: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Gift className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <ul className="space-y-3">
-                  <li><Skeleton className="h-4 w-full" /></li>
-                  <li><Skeleton className="h-4 w-5/6" /></li>
-                </ul>
-              )}
-            </div>
-          )}
+            {/* Benefits Card */}
+            {vacancy.benefits?.length > 0 && (
+              <Card className={cn("shadow-layered border-0 transition-opacity duration-200", contentVisible ? "opacity-100" : "opacity-60")}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-muted-foreground" />
+                    Wat bieden wij?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {contentVisible ? (
+                    <ul className="space-y-2.5">
+                      {vacancy.benefits.map((benefit: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-2 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="space-y-3">
+                      <li><Skeleton className="h-4 w-full" /></li>
+                      <li><Skeleton className="h-4 w-5/6" /></li>
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
-          {/* Metadata Footer */}
-          <div className="pt-6 border-t border-border text-sm text-muted-foreground space-y-3">
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {/* Metadata Footer (rendered without an extra Card/container as requested) */}
+          <div className="p-4 text-sm text-muted-foreground space-y-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-1">
               <span>
                 Gepubliceerd:{" "}
                 <strong className="text-foreground">
@@ -514,7 +567,7 @@ export function VacatureDetailView({
                 </strong>
               </span>
             </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-1">
               {vacancy.createdBy && (
                 <span>
                   Aangemaakt door:{" "}
@@ -532,6 +585,20 @@ export function VacatureDetailView({
                 </span>
               )}
             </div>
+          </div>
+          {/* Actions at bottom: edit / share / delete — grouped and sticky to the bottom of the content area */}
+          <div className="mt-4 flex items-center gap-2">
+            <a href={`/vacatures/${vacancy.id}/edit`}>
+              <Button size="sm" variant="outline" className="gap-2 rounded-full">
+                <Edit className="h-4 w-4" /> Bewerken
+              </Button>
+            </a>
+            <Button size="sm" variant="outline" className="gap-2 rounded-full" onClick={handleShare}>
+              <Share2 className="h-4 w-4" /> Deel
+            </Button>
+            <Button size="sm" variant="destructive" className="gap-2 rounded-full ml-auto" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </main>

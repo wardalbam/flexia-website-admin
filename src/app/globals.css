@@ -321,4 +321,43 @@
   .mesh-brand {
     background: radial-gradient(circle, rgba(0, 200, 150, 0.15), transparent 70%);
   }
+
+  /* Frontend-matching text gradient */
+  .text-gradient {
+    background: linear-gradient(to right, var(--brand), var(--brand-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Card hover effect (frontend-style) */
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .card-hover:hover {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      0 20px 40px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+/* Frontend-matching component classes */
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold
+           hover:opacity-90 transition-all duration-300 hover:scale-105
+           shadow-lg shadow-primary/20;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-2 border-foreground text-foreground px-6 py-3
+           rounded-full font-semibold hover:bg-foreground hover:text-background
+           transition-all duration-300;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
 }

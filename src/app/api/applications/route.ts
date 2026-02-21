@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     prisma.application.count({ where }),
   ]);
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     applications,
     pagination: {
       page,
@@ -75,6 +75,8 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / limit),
     },
   });
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }
 
 // POST /api/applications - Public (for frontend submissions)
