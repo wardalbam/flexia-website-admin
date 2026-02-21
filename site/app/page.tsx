@@ -61,11 +61,11 @@ export default async function HomePage() {
                 id="hero-heading"
                 className="font-black text-white leading-[0.9] tracking-[-0.03em] text-[clamp(3.5rem,11vw,9rem)]"
               >
-                Gastvrij
+                 
                 <br />
-                <span className="text-[var(--brand)]">&</span> direct
+                <span className="text-[var(--brand)]">Direct</span> aan de slag.
                 <br />
-                inzetbaar.
+                 
               </h1>
             </div>
 
