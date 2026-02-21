@@ -100,6 +100,7 @@ export default function VacatureList({ vacatures, onSelect, compact = false, sel
 
   const [quickId, setQuickId] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [quickInitial, setQuickInitial] = useState<any | null>(null);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -280,13 +281,10 @@ export default function VacatureList({ vacatures, onSelect, compact = false, sel
                       try {
                         const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
                         if (isMobile) {
-                          // navigate to the vacancy page (full overview) on mobile
-                          try {
-                            router.push(`/vacatures/${v.id}`);
-                          } catch (err) {
-                            // fallback to location.assign
-                            window.location.href = `/vacatures/${v.id}`;
-                          }
+                          // Open quick-view dialog on mobile with the card data as initial content so it's instant
+                          setQuickInitial(v);
+                          setQuickId(String(v.id));
+                          setQuickOpen(true);
                           return;
                         }
                       } catch (err) {}
@@ -396,7 +394,7 @@ export default function VacatureList({ vacatures, onSelect, compact = false, sel
             );
           })}
         </div>
-        <VacatureQuickView id={quickId} open={quickOpen} onOpenChange={(v) => setQuickOpen(v)} />
+  <VacatureQuickView id={quickId} open={quickOpen} onOpenChange={(v) => { if (!v) setQuickInitial(null); setQuickOpen(v); }} initialVacature={quickInitial} />
         </>
       ) : (
         <div className="text-center py-16 text-muted-foreground">

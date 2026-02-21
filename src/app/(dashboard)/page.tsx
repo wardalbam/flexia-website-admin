@@ -66,25 +66,66 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-6 animate-fade-in">
+    <div className="p-3 md:p-5 space-y-6 animate-fade-in">
       {/* Page Title */}
       <div>
         <h1 className="text-2xl font-black tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Overzicht van je recruitment activiteiten</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
+      {/* Recent Applications (moved up) */}
+      <Card className="shadow-layered border-0 animate-fade-in">
+        <CardHeader className="flex items-center justify-between pb-2">
+          <CardTitle className="text-base font-bold">Recente Sollicitaties</CardTitle>
+          <Link href="/applications" className="text-xs text-primary hover:underline font-semibold">Bekijk alles</Link>
+        </CardHeader>
+        <CardContent className="p-3">
+          {!recentApplications || recentApplications.length === 0 ? (
+            <p className="text-muted-foreground text-center py-6 text-sm">Nog geen sollicitaties ontvangen</p>
+          ) : (
+            <div className="space-y-1">
+              {recentApplications.map((app: any, i: number) => (
+                <Link
+                  key={app.id}
+                  href={`/applications/${app.id}`}
+                  className={cn("flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 group", `animate-fade-in stagger-${Math.min(i + 1, 6)}`)}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-primary text-sm font-bold">{app.firstName[0]}{app.lastName[0]}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{app.firstName} {app.lastName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{app.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs text-muted-foreground hidden sm:block">
+                      {new Date(app.createdAt).toLocaleDateString("nl-NL")}
+                    </span>
+                    <Badge className={cn("font-bold text-xs", getStatusBadgeClasses(app.status))}>
+                      {statusLabels[app.status] || app.status}
+                    </Badge>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Stats Cards (compact) */}
+      <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
+        {statCards.slice(0, 2).map((stat, i) => (
           <Card key={stat.label} className={cn("overflow-hidden hover-lift group border-0 shadow-layered", `animate-fade-in stagger-${i + 1}`)}>
-            <CardContent className="p-5 relative">
-              <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50 group-hover:opacity-100 transition-opacity duration-300", stat.color)} />
+            <CardContent className="p-4 relative">
+              <div className={cn("absolute inset-0 bg-gradient-to-br opacity-40 group-hover:opacity-100 transition-opacity duration-300 rounded-xl", stat.color)} />
               <div className="relative">
-                <div className="p-2 rounded-xl bg-background/80 w-fit mb-3">
+                <div className="p-2 rounded-lg bg-background/80 w-fit mb-3">
                   <stat.icon className={cn("h-5 w-5", stat.iconColor)} />
                 </div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{stat.label}</p>
-                <p className="text-3xl font-black mt-1 tracking-tight">{stat.value}</p>
+                <p className="text-2xl font-extrabold mt-1 tracking-tight">{stat.value}</p>
               </div>
             </CardContent>
           </Card>
@@ -231,80 +272,22 @@ export default function DashboardPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-bold">Snel Acties</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Link href="/vacatures/new" className="flex items-center justify-center rounded-full bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg shadow-primary/20">
-                Nieuwe vacature aanmaken
-              </Link>
-              <Link href="/applications" className="flex items-center justify-center rounded-full border border-border bg-background px-5 py-2.5 text-sm font-semibold hover:bg-muted transition-all duration-300">
-                Bekijk sollicitaties
-              </Link>
+            <CardContent className="p-3">
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/vacatures/new" className="text-sm text-primary hover:underline font-semibold">Nieuwe vacature aanmaken</Link>
+                </li>
+                <li>
+                  <Link href="/applications" className="text-sm text-primary hover:underline font-semibold">Bekijk sollicitaties</Link>
+                </li>
+              </ul>
             </CardContent>
           </Card>
-
-          <Card className="shadow-layered border-0 animate-fade-in stagger-6">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base font-bold">Laatste Vacatures</CardTitle>
-              <Link href="/vacatures" className="text-xs text-primary hover:underline font-semibold">Alles</Link>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {(latestVacatures || []).map((v: any) => (
-                  <Link key={v.id} href={`/vacatures/${v.id}`} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-muted/50 transition-all duration-200 group">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm truncate">{v.title}</p>
-                      <p className="text-xs text-muted-foreground">{v.location}</p>
-                    </div>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
 
-      {/* Recent Applications */}
-      <Card className="shadow-layered border-0 animate-fade-in">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base font-bold">Recente Sollicitaties</CardTitle>
-          <Link href="/applications" className="text-xs text-primary hover:underline font-semibold">
-            Bekijk alles
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {!recentApplications || recentApplications.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8 text-sm">Nog geen sollicitaties ontvangen</p>
-          ) : (
-            <div className="space-y-1">
-              {recentApplications.map((app: any, i: number) => (
-                <Link
-                  key={app.id}
-                  href={`/applications/${app.id}`}
-                  className={cn("flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 group", `animate-fade-in stagger-${Math.min(i + 1, 6)}`)}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-primary text-sm font-bold">{app.firstName[0]}{app.lastName[0]}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm">{app.firstName} {app.lastName}</p>
-                      <p className="text-xs text-muted-foreground truncate">{app.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs text-muted-foreground hidden sm:block">
-                      {new Date(app.createdAt).toLocaleDateString("nl-NL")}
-                    </span>
-                    <Badge className={cn("font-bold text-xs", getStatusBadgeClasses(app.status))}>
-                      {statusLabels[app.status] || app.status}
-                    </Badge>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* End dashboard content */}
     </div>
   );
 }

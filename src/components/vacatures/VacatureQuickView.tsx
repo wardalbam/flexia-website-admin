@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export default function VacatureQuickView({ id, open, onOpenChange }: { id: string | null; open: boolean; onOpenChange: (v: boolean) => void; }) {
-  const { data: vacature, error } = useSWR(id ? `/api/vacatures/${id}` : null, fetcher, { revalidateOnFocus: false });
+export default function VacatureQuickView({ id, open, onOpenChange, initialVacature }: { id: string | null; open: boolean; onOpenChange: (v: boolean) => void; initialVacature?: any; }) {
+  const { data: vacature, error } = useSWR(id ? `/api/vacatures/${id}` : null, fetcher, { fallbackData: initialVacature, revalidateOnFocus: false });
 
   const handleShare = async () => {
     if (!vacature) return;

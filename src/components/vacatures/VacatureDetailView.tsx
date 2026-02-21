@@ -162,7 +162,8 @@ export function VacatureDetailView({
   const handleShare = async () => {
     // Prefer a configured public frontend origin, fall back to the public site used in repo
     const origin = (process.env.NEXT_PUBLIC_FRONTEND_URL as string) || "https://www.flexiajobs.nl";
-    const publicPath = `/singel/${vacancy.id}`;
+    // Public site uses /vacatures/{id} paths for job details
+    const publicPath = `/vacatures/${vacancy.id}`;
     const url = `${origin.replace(/\/$/, "")}${publicPath}`;
 
     try {

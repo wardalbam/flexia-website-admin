@@ -475,9 +475,12 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
         </CardContent>
       </Card>
         {/* Sticky mobile action bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-3 sm:static sm:bg-transparent sm:backdrop-blur-0 sm:border-none sm:p-0">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-3 sm:static sm:bg-transparent sm:backdrop-blur-0 sm:border-none sm:p-0"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
+          <div className="max-w-4xl mx-auto w-full px-3 flex flex-col sm:flex-row gap-3 items-center">
+            <div className="flex-1 min-w-0">
               {isEditing && (
                 <Button
                   type="button"
@@ -500,11 +503,11 @@ export function VacatureForm({ initialData }: { initialData?: VacatureData }) {
                 </Button>
               )}
             </div>
-            <div className="flex gap-3 w-full sm:w-auto">
-              <Button type="button" variant="outline" onClick={() => router.back()} className="w-full sm:w-auto rounded-full">
+            <div className="flex gap-3 w-full sm:w-auto flex-wrap">
+              <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1 sm:w-auto rounded-full min-w-0">
                 Annuleren
               </Button>
-              <Button type="submit" disabled={saving} className="w-full sm:w-auto rounded-full font-semibold">
+              <Button type="submit" disabled={saving} className="flex-1 sm:w-auto rounded-full font-semibold min-w-0">
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? "Opslaan..." : isEditing ? "Bijwerken" : "Aanmaken"}
               </Button>

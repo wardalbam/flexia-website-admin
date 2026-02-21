@@ -104,7 +104,7 @@ export default function InlineFieldEditor({ id, field, value = "", placeholder =
               value={input}
               onChange={(e) => setInput(e.target.value)}
               rows={rows}
-              className="px-2 py-1 text-sm rounded border border-border w-[36rem] max-w-full"
+              className="px-2 py-1 text-sm rounded border border-border w-full max-w-full"
               placeholder={placeholder}
             />
           ) : (
